@@ -2,12 +2,16 @@ import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 
 import { RouteWithLayout } from './components';
-import { Main as MainLayout, Minimal as MinimalLayout } from './layouts';
+import {
+  Main as MainLayout,
+  Minimal as MinimalLayout
+} from './layouts';
 
 import {
   Dashboard as DashboardView,
   ProductList as ProductListView,
   UserList as UserListView,
+  WaitList as WaitListView,
   Typography as TypographyView,
   Icons as IconsView,
   Account as AccountView,
@@ -23,7 +27,13 @@ const Routes = () => {
       <Redirect
         exact
         from="/"
-        to="/dashboard"
+        to="/waitlist"
+      />
+      <RouteWithLayout
+        component={WaitListView}
+        exact
+        layout={MainLayout}
+        path="/waitlist"
       />
       <RouteWithLayout
         component={DashboardView}
