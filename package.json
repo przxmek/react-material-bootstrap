@@ -1,10 +1,10 @@
 {
-  "name": "react-material-dashboard",
-  "author": "DeviasIO",
-  "email": "contact@devias.io",
-  "licence": "MIT",
-  "version": "0.3.0",
-  "private": false,
+  "name": "point-admin-dashboard",
+  "author": "Point API",
+  "email": "przemek@poinapi.com",
+  "licence": "UNLICENSED",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
