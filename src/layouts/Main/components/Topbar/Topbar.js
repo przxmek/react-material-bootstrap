@@ -12,6 +12,10 @@ const useStyles = makeStyles(theme => ({
   root: {
     boxShadow: 'none'
   },
+  logo: {
+    height: '36px',
+    display: 'inline-block'
+  },
   flexGrow: {
     flexGrow: 1
   },
@@ -34,11 +38,12 @@ const Topbar = props => {
     >
       <Toolbar>
         <RouterLink to="/">
-          {/* <img
-            alt="Logo"
-            src="/images/logos/logo--white.svg"
-          /> */}
-          <Typography variant="h3">Point Admin Dashboard</Typography>
+          <img
+            className={classes.logo}
+            alt="Point."
+            src="/images/logos/point-logo.svg"
+          />
+          <Typography color="textPrimary" variant="h2" display="inline"> Admin Dashboard</Typography>
         </RouterLink>
         <div className={classes.flexGrow} />
         <Hidden mdDown>

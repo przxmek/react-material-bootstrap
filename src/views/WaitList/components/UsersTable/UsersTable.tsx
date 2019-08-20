@@ -7,19 +7,16 @@ import {
   Card,
   CardActions,
   CardContent,
-  Avatar,
   Checkbox,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  Typography,
   TablePagination,
   Theme
 } from '@material-ui/core';
 
-import { getInitials } from 'helpers';
 import User from '../../user';
 
 const styles = (theme: Theme) => createStyles({
@@ -117,6 +114,7 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   private handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, pageNumber: number) => {
+    debugger;
     this.setPage(pageNumber);
   }
 
@@ -150,11 +148,12 @@ class UsersTable extends React.Component<PropsType, State> {
                         onChange={this.handleSelectAll}
                       />
                     </TableCell>
-                    <TableCell>Name</TableCell>
+                    {/* <TableCell>Name</TableCell> */}
                     <TableCell>Email</TableCell>
-                    <TableCell>Location</TableCell>
-                    <TableCell>Phone</TableCell>
+                    {/* <TableCell>Location</TableCell> */}
+                    {/* <TableCell>Phone</TableCell> */}
                     <TableCell>Registration date</TableCell>
+                    <TableCell>Last login</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -173,7 +172,7 @@ class UsersTable extends React.Component<PropsType, State> {
                           value="true"
                         />
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className={classes.nameContainer}>
                           <Avatar
                             className={classes.avatar}
@@ -183,17 +182,20 @@ class UsersTable extends React.Component<PropsType, State> {
                           </Avatar>
                           <Typography variant="body1">{user.name}</Typography>
                         </div>
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
+                      </TableCell> */}
+                      <TableCell>{user.email_address}</TableCell>
+                      {/* <TableCell>
                         {user.address != null && (<>
                           {user.address.city}, {user.address.state}, {' '}
                           {user.address.country}
                         </>)}
-                      </TableCell>
-                      <TableCell>{user.phone}</TableCell>
+                      </TableCell> */}
+                      {/* <TableCell>{user.phone}</TableCell> */}
                       <TableCell>
-                        {moment(user.createdAt).format('DD/MM/YYYY')}
+                        {moment(user.create_date).format('DD/MM/YYYY')}
+                      </TableCell>
+                      <TableCell>
+                        {moment(user.last_login).format('DD/MM/YYYY')}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -210,7 +212,7 @@ class UsersTable extends React.Component<PropsType, State> {
             onChangeRowsPerPage={this.handleRowsPerPageChange}
             page={page}
             rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[5, 10, 25, 100]}
           />
         </CardActions>
       </Card>
