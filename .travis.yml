@@ -1,0 +1,40 @@
+language: node_js
+node_js:
+  - '10.3'
+cache: npm
+env:
+  global:
+    # include $HOME/.local/bin for `aws`
+    - PATH=$HOME/.local/bin:$PATH
+    - IMAGE_NAME=admin-dashboard-frontend
+services:
+  - docker
+notifications:
+  slack:
+    pointapi:Sjvqcwm25jFhXxEdZirCDqRk
+before_install:
+- npm i -g npm@6.9.0
+# set up awscli packages
+- pip install --user awscli
+jobs:
+  include:
+    - stage: test
+      script:
+      - npm test
+      - npm run build
+    - stage: docker
+      script:
+      - docker build -t ${IMAGE_NAME}:latest .
+      - echo "Pushing ${IMAGE_NAME} docker image to ECR.."
+        - echo "Travis branch $TRAVIS_BRANCH | commit $TRAVIS_COMMIT"
+        - export BRANCH_TAG=`echo $TRAVIS_BRANCH | tr / _`
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$BRANCH_TAG
+        - $(aws ecr get-login --no-include-email --region us-west-2)
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$BRANCH_TAG
+        - |
+          if [ "$TRAVIS_BRANCH" == "master" ]; then
+            docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
+            docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
+          fi
