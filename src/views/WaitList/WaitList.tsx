@@ -3,8 +3,8 @@ import { Theme } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 
 import { UsersToolbar, UsersTable } from './components';
-import mockData from './data';
-import User from './user';
+import User from 'models/user';
+import { fetchUsers } from 'api/users';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -34,16 +34,23 @@ class WaitList extends React.Component<PropsType, State> {
   }
 
   private loadUsers = async () => {
-    const response = await fetch('http://localhost:5000/users');
+    const users = await fetchUsers();
 
-    const json = await response.json();
-    const users = json.users;
-
-    console.log(users[0]);
+    // Sort
+    users.sort((a, b) => {
+      if (a.active && !b.active) {
+        return 1;
+      }
+      if (a.active === b.active && a.active === true && a.id < b.id) {
+        return 1;
+      }
+      if (a.active === b.active && a.active === false && a.id > b.id) {
+        return 1;
+      }
+      return -1;
+    });
 
     this.setState({ users });
-
-    return mockData;
   }
 
   public render() {
@@ -54,7 +61,7 @@ class WaitList extends React.Component<PropsType, State> {
       <div className={classes.root}>
         <UsersToolbar />
         <div className={classes.content}>
-          <UsersTable users={users} />
+          <UsersTable users={users} refreshUsers={() => this.loadUsers()} />
         </div>
       </div>
     );

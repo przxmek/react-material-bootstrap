@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/styles';
-import { Button } from '@material-ui/core';
+import { Button, Tooltip } from '@material-ui/core';
 
 import { SearchInput } from 'components';
 
@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
   importButton: {
     marginRight: theme.spacing(1)
   },
-  exportButton: {
+  activateButton: {
     marginRight: theme.spacing(1)
   },
   searchInput: {
@@ -41,13 +41,23 @@ const UsersToolbar = props => {
       <div className={classes.row}>
         <span className={classes.spacer} />
         <Button className={classes.importButton}>Import</Button>
-        <Button className={classes.exportButton}>Export</Button>
-        <Button
-          color="primary"
-          variant="contained"
-        >
-          Add user
+        <Tooltip title="Activate selected users">
+          <Button
+            color="primary"
+            variant="contained"
+            className={classes.activateButton}
+          >
+            Activate
+          </Button>
+        </Tooltip>
+        <Tooltip title="Add new (inactive) user">
+          <Button
+            color="primary"
+            variant="contained"
+          >
+            Add user
         </Button>
+        </Tooltip>
       </div>
       <div className={classes.row}>
         <SearchInput

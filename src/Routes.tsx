@@ -10,7 +10,6 @@ import {
 import {
   Dashboard as DashboardView,
   ProductList as ProductListView,
-  UserList as UserListView,
   WaitList as WaitListView,
   Typography as TypographyView,
   Icons as IconsView,
@@ -27,13 +26,7 @@ const Routes = () => {
       <Redirect
         exact
         from="/"
-        to="/waitlist"
-      />
-      <RouteWithLayout
-        component={WaitListView}
-        exact
-        layout={MainLayout}
-        path="/waitlist"
+        to="/users"
       />
       <RouteWithLayout
         component={DashboardView}
@@ -42,7 +35,7 @@ const Routes = () => {
         path="/dashboard"
       />
       <RouteWithLayout
-        component={UserListView}
+        component={WaitListView}
         exact
         layout={MainLayout}
         path="/users"

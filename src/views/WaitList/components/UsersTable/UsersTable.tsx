@@ -14,10 +14,12 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Theme
+  Theme,
+  Button
 } from '@material-ui/core';
 
-import User from '../../user';
+import User from 'models/user';
+import { putUser } from 'api/users';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -28,7 +30,7 @@ const styles = (theme: Theme) => createStyles({
     minWidth: 1050
   },
   tableRow: {
-    
+
   },
   nameContainer: {
     display: 'flex',
@@ -39,12 +41,16 @@ const styles = (theme: Theme) => createStyles({
   },
   actions: {
     justifyContent: 'flex-end'
-  }
+  },
+  activateButton: {
+    marginRight: theme.spacing(1)
+  },
 });
 
 interface Props {
   className?: string;
   users: User[];
+  refreshUsers: () => void;
 }
 type PropsType = Props & WithStyles<typeof styles>;
 
@@ -63,6 +69,16 @@ class UsersTable extends React.Component<PropsType, State> {
       rowsPerPage: 10,
       page: 0
     };
+  }
+
+  private activateUser = async (user: User) => {
+    const { refreshUsers } = this.props;
+
+    user.active = true;
+
+    await putUser(user);
+
+    refreshUsers();
   }
 
   private setSelectedUsers = (selectedUsers: string[]) => {
@@ -114,7 +130,6 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   private handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, pageNumber: number) => {
-    debugger;
     this.setPage(pageNumber);
   }
 
@@ -154,6 +169,7 @@ class UsersTable extends React.Component<PropsType, State> {
                     {/* <TableCell>Phone</TableCell> */}
                     <TableCell>Registration date</TableCell>
                     <TableCell>Last login</TableCell>
+                    <TableCell>Active</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -195,7 +211,33 @@ class UsersTable extends React.Component<PropsType, State> {
                         {moment(user.create_date).format('DD/MM/YYYY')}
                       </TableCell>
                       <TableCell>
-                        {moment(user.last_login).format('DD/MM/YYYY')}
+                        {user.last_login && (<>{moment(user.last_login).format('DD/MM/YYYY')}</>)}
+                        {!user.last_login && (<>--</>)}
+
+                      </TableCell>
+                      <TableCell>
+                        {(user.active) && (
+                          <Button
+                            disabled
+                            color="primary"
+                            variant="outlined"
+                            size="small"
+                            className={classes.activateButton}
+                          >
+                            Activated
+                          </Button>
+                        )}
+                        {(!user.active) && (
+                          <Button
+                            color="primary"
+                            variant="outlined"
+                            size="small"
+                            className={classes.activateButton}
+                            onClick={() => this.activateUser(user)}
+                          >
+                            Activate
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
