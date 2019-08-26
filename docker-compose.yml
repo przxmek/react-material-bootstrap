@@ -1,0 +1,9 @@
+version: "3"
+services:
+  admin-dashboard-frontend:
+    image: 537194362290.dkr.ecr.us-west-2.amazonaws.com/admin-dashboard-frontend
+    ports:
+      - "80:3000"
+  admin-dashboard-backend:
+    image: 537194362290.dkr.ecr.us-west-2.amazonaws.com/admin-dashboard-backend
+      - "5000:5000"

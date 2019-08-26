@@ -29,5 +29,8 @@ COPY --from=build /app/build /usr/share/nginx/html
 
 EXPOSE 80
 
+# Append "daemon off;" to the beginning of the configuration
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
 # start nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD service nginx start
