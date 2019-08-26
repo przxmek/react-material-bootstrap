@@ -26,11 +26,3 @@ FROM nginx:1.17-alpine
 
 # Use build from docker build stage
 COPY --from=build /app/build /usr/share/nginx/html
-
-EXPOSE 80
-
-# Append "daemon off;" to the beginning of the configuration
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-
-# start nginx
-CMD service nginx start
