@@ -1,9 +1,8 @@
 import User from "models/user";
-
-const BASE_URL = 'http://localhost:5000';
+import { API_URL } from "config";
 
 export async function fetchUsers(): Promise<User[]> {
-  const response = await fetch(`${BASE_URL}/users`);
+  const response = await fetch(`${API_URL}/users`);
 
   const json = await response.json();
   const users = json.users;
@@ -13,7 +12,7 @@ export async function fetchUsers(): Promise<User[]> {
 
 export async function putUser(user: User): Promise<User> {
   const response = await fetch(
-    `${BASE_URL}/user/${user.email_address}`, {
+    `${API_URL}/user/${user.email_address}`, {
       method: 'PUT',
       body: JSON.stringify(user),
       headers: {
