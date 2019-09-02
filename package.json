@@ -7,7 +7,11 @@
   "private": true,
   "scripts": {
     "start": "react-scripts start",
+    "start-dev": "REACT_APP_ENV=dev npm run start",
+    "start-prod": "REACT_APP_ENV=prod npm run start",
     "build": "react-scripts build",
+    "build-dev": "REACT_APP_ENV=dev npm run build",
+    "build-prod": "REACT_APP_ENV=prod npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
