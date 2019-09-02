@@ -62,7 +62,7 @@ const Routes = () => {
         component={AccountView}
         exact
         layout={MainLayout}
-        path="/account"
+        path="/account/:emailAddress"
       />
       <RouteWithLayout
         component={SettingsView}

@@ -10,6 +10,17 @@ export async function fetchUsers(): Promise<User[]> {
   return users;
 }
 
+export async function fetchUser(emailAddress: string): Promise<User> {
+  const response = await fetch(
+    `${API_URL}/user/${emailAddress}`, {
+      method: 'GET',
+    }
+  );
+
+  const json = await response.json();
+  return json;
+}
+
 export async function putUser(user: User): Promise<User> {
   const response = await fetch(
     `${API_URL}/user/${user.email_address}`, {
