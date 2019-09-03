@@ -49,15 +49,18 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  users: User[];
   refreshUsers: () => void;
+  searchText: string;
+  users: User[];
 }
 type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
-  selectedUsers: string[];
-  rowsPerPage: number;
+  filteredUsers: User[];
   page: number;
+  rowsPerPage: number;
+  filterText: string;
+  selectedUsers: string[];
 }
 
 class UsersTable extends React.Component<PropsType, State> {
@@ -65,10 +68,20 @@ class UsersTable extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      selectedUsers: [],
+      filteredUsers: props.users.slice(),
+      page: 0,
       rowsPerPage: 10,
-      page: 0
+      filterText: '',
+      selectedUsers: [],
     };
+  }
+
+  public componentDidUpdate(prevProps: PropsType) {
+    const { searchText, users } = this.props;
+
+    if (prevProps.searchText !== searchText || prevProps.users !== users) {
+      this.onSearchTextChange(searchText);
+    }
   }
 
   private activateUser = async (user: User) => {
@@ -79,6 +92,30 @@ class UsersTable extends React.Component<PropsType, State> {
     await putUser(user);
 
     refreshUsers();
+  }
+
+  private onSearchTextChange = (searchText: string) => {
+    const { users } = this.props;
+    const filteredUsers = this.filterUsers(searchText, users);
+    this.setState({ filteredUsers, selectedUsers: [], page: 0 });
+  }
+
+  private filterUsers = (filterText: string, users: User[]): User[] => {
+    if (filterText.trim() === '') {
+      return users.slice();
+    }
+
+    const filterTextLower = filterText.trim().toLowerCase();
+
+    const a = users.filter(u => u.email_address.toLowerCase().startsWith(filterTextLower));
+    const b = users.filter(u => u.email_address.toLowerCase().includes(filterTextLower));
+    const c = "active".startsWith(filterTextLower) ? users.filter(u => u.active) : [];
+    const d = "inactive".startsWith(filterTextLower) ? users.filter(u => !u.active) : [];
+
+    const results = a.concat(b, c, d);
+    const deduplicated = results.filter((elem, pos, arr) => arr.indexOf(elem) === pos);
+
+    return deduplicated;
   }
 
   private setSelectedUsers = (selectedUsers: string[]) => {
@@ -139,8 +176,8 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   public render() {
-    const { className, classes, users, ...rest } = this.props;
-    const { selectedUsers, rowsPerPage, page } = this.state;
+    const { className, classes, ...rest } = this.props;
+    const { filteredUsers, page, rowsPerPage, selectedUsers } = this.state;
 
     return (
       <Card
@@ -155,11 +192,11 @@ class UsersTable extends React.Component<PropsType, State> {
                   <TableRow>
                     <TableCell padding="checkbox">
                       <Checkbox
-                        checked={selectedUsers.length === users.length}
+                        checked={selectedUsers.length === filteredUsers.length}
                         color="primary"
                         indeterminate={
                           selectedUsers.length > 0 &&
-                          selectedUsers.length < users.length
+                          selectedUsers.length < filteredUsers.length
                         }
                         onChange={this.handleSelectAll}
                       />
@@ -174,7 +211,7 @@ class UsersTable extends React.Component<PropsType, State> {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(user => (
+                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(user => (
                     <TableRow
                       className={classes.tableRow}
                       hover
@@ -250,7 +287,7 @@ class UsersTable extends React.Component<PropsType, State> {
         <CardActions className={classes.actions}>
           <TablePagination
             component="div"
-            count={users.length}
+            count={filteredUsers.length}
             onChangePage={this.handlePageChange}
             onChangeRowsPerPage={this.handleRowsPerPageChange}
             page={page}

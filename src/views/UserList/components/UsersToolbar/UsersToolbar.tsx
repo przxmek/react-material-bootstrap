@@ -29,6 +29,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
+  onSearchTextChange?: (text: string) => void;
 }
 type PropsType = Props & WithStyles<typeof styles>;
 
@@ -36,12 +37,8 @@ interface State {
 }
 
 class UsersToolbar extends React.Component<PropsType, State> {
-  private onSearchTextChange = (text: string) => {
-    console.log(text);
-  }
-
   public render() {
-    const { classes, className, ...rest } = this.props;
+    const { classes, className, onSearchTextChange, ...rest } = this.props;
 
     return (
       <div
@@ -52,28 +49,21 @@ class UsersToolbar extends React.Component<PropsType, State> {
           <span className={classes.spacer} />
           <Button className={classes.importButton}>Import</Button>
           <Tooltip title="Activate selected users">
-            <Button
-              color="primary"
-              variant="contained"
-              className={classes.activateButton}
-            >
+            <Button color="primary" variant="contained" className={classes.activateButton}>
               Activate
           </Button>
           </Tooltip>
           <Tooltip title="Add new (inactive) user">
-            <Button
-              color="primary"
-              variant="contained"
-            >
+            <Button color="primary" variant="contained">
               Add user
-        </Button>
+            </Button>
           </Tooltip>
         </div>
         <div className={classes.row}>
           <SearchInput
             className={classes.searchInput}
             placeholder="Search user"
-            onChange={this.onSearchTextChange}
+            onChange={onSearchTextChange}
           />
         </div>
       </div>

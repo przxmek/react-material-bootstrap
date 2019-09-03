@@ -18,15 +18,17 @@ const styles = (theme: Theme) => createStyles({
 type PropsType = WithStyles<typeof styles>;
 
 interface State {
+  searchText: string;
   users: User[];
 }
 
-class WaitList extends React.Component<PropsType, State> {
+class UserList extends React.Component<PropsType, State> {
 
   constructor(props: PropsType) {
     super(props);
 
     this.state = {
+      searchText: '',
       users: []
     };
 
@@ -53,19 +55,27 @@ class WaitList extends React.Component<PropsType, State> {
     this.setState({ users });
   }
 
+  private onSearchTextChange = (searchText: string) => {
+    this.setState({ searchText });
+  }
+
   public render() {
     const { classes } = this.props;
-    const { users } = this.state;
+    const { searchText, users } = this.state;
 
     return (
       <div className={classes.root}>
-        <UsersToolbar />
+        <UsersToolbar onSearchTextChange={this.onSearchTextChange} />
         <div className={classes.content}>
-          <UsersTable users={users} refreshUsers={() => this.loadUsers()} />
+          <UsersTable
+            refreshUsers={() => this.loadUsers()}
+            searchText={searchText}
+            users={users}
+          />
         </div>
       </div>
     );
   }
 }
 
-export default withStyles(styles)(WaitList);
+export default withStyles(styles)(UserList);
