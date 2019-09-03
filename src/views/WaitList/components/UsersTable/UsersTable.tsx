@@ -135,6 +135,7 @@ class UsersTable extends React.Component<PropsType, State> {
 
   private handleRowsPerPageChange = (event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     this.setRowsPerPage(parseInt(event.target.value, 10));
+    this.setPage(0);
   }
 
   public render() {
@@ -173,7 +174,7 @@ class UsersTable extends React.Component<PropsType, State> {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {users.slice(0, rowsPerPage).map(user => (
+                  {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(user => (
                     <TableRow
                       className={classes.tableRow}
                       hover
