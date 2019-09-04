@@ -15,11 +15,13 @@ import {
   TableRow,
   TablePagination,
   Theme,
-  Button
+  Button,
 } from '@material-ui/core';
+import SendIcon from '@material-ui/icons/Send';
+import CreditCardIcon from '@material-ui/icons/CreditCard';
+
 
 import User from 'models/user';
-import { putUser } from 'api/users';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -29,9 +31,7 @@ const styles = (theme: Theme) => createStyles({
   inner: {
     minWidth: 1050
   },
-  tableRow: {
-
-  },
+  tableRow: {},
   nameContainer: {
     display: 'flex',
     alignItems: 'center'
@@ -42,14 +42,21 @@ const styles = (theme: Theme) => createStyles({
   actions: {
     justifyContent: 'flex-end'
   },
-  activateButton: {
+  marginRight: {
     marginRight: theme.spacing(1)
+  },
+  margin: {
+    margin: theme.spacing(1),
+  },
+  iconSmall: {
+    fontSize: 20,
   },
 });
 
 interface Props {
   className?: string;
-  refreshUsers: () => void;
+  onChangeSelectedUsers: (users: string[]) => void;
+  onUserActivate: (user: User) => void;
   searchText: string;
   users: User[];
 }
@@ -84,16 +91,6 @@ class UsersTable extends React.Component<PropsType, State> {
     }
   }
 
-  private activateUser = async (user: User) => {
-    const { refreshUsers } = this.props;
-
-    user.active = true;
-
-    await putUser(user);
-
-    refreshUsers();
-  }
-
   private onSearchTextChange = (searchText: string) => {
     const { users } = this.props;
     const filteredUsers = this.filterUsers(searchText, users);
@@ -120,6 +117,7 @@ class UsersTable extends React.Component<PropsType, State> {
 
   private setSelectedUsers = (selectedUsers: string[]) => {
     this.setState({ selectedUsers });
+    this.props.onChangeSelectedUsers(selectedUsers);
   }
 
   private setRowsPerPage = (rowsPerPage: number) => {
@@ -176,7 +174,7 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   public render() {
-    const { className, classes, ...rest } = this.props;
+    const { className, classes, onUserActivate, ...rest } = this.props;
     const { filteredUsers, page, rowsPerPage, selectedUsers } = this.state;
 
     return (
@@ -207,7 +205,7 @@ class UsersTable extends React.Component<PropsType, State> {
                     {/* <TableCell>Phone</TableCell> */}
                     <TableCell>Registration date</TableCell>
                     <TableCell>Last login</TableCell>
-                    <TableCell>Active</TableCell>
+                    <TableCell>Manage</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -260,7 +258,7 @@ class UsersTable extends React.Component<PropsType, State> {
                             color="primary"
                             variant="outlined"
                             size="small"
-                            className={classes.activateButton}
+                            className={classes.marginRight}
                           >
                             Activated
                           </Button>
@@ -270,12 +268,31 @@ class UsersTable extends React.Component<PropsType, State> {
                             color="primary"
                             variant="outlined"
                             size="small"
-                            className={classes.activateButton}
-                            onClick={() => this.activateUser(user)}
+                            className={classes.marginRight}
+                            onClick={() => onUserActivate(user)}
                           >
                             Activate
                           </Button>
                         )}
+
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          className={classes.marginRight}
+                          href={"https://dashboard.stripe.com/search?query=" + user.email_address}
+                        >
+                          <CreditCardIcon className={clsx(classes.marginRight, classes.iconSmall)} />
+                          Stripe
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          className={classes.marginRight}
+                        >
+                          <SendIcon className={clsx(classes.marginRight, classes.iconSmall)} />
+                          Mailjet
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

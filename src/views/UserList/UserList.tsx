@@ -4,7 +4,7 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 
 import { UsersToolbar, UsersTable } from './components';
 import User from 'models/user';
-import { fetchUsers } from 'api/users';
+import { fetchUsers, putUser } from 'api/users';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -19,6 +19,7 @@ type PropsType = WithStyles<typeof styles>;
 
 interface State {
   searchText: string;
+  selectedUsers: string[];
   users: User[];
 }
 
@@ -29,13 +30,14 @@ class UserList extends React.Component<PropsType, State> {
 
     this.state = {
       searchText: '',
-      users: []
+      selectedUsers: [],
+      users: [],
     };
 
-    this.loadUsers();
+    this.reloadUsers();
   }
 
-  private loadUsers = async () => {
+  private reloadUsers = async () => {
     const users = await fetchUsers();
 
     // Sort
@@ -59,18 +61,52 @@ class UserList extends React.Component<PropsType, State> {
     this.setState({ searchText });
   }
 
+  private activateUser = async (user: User) => {
+    user.active = true;
+
+    await putUser(user);
+
+    await this.reloadUsers();
+  }
+
+  private onChangeSelectedUsers = (selectedUsers: string[]) => {
+    this.setState({ selectedUsers });
+  }
+
+  private onBulkUsersActivate = async () => {
+    console.log("bulk activate");
+    const { users, selectedUsers } = this.state;
+
+    selectedUsers.forEach(async (userId) => {
+      const usersFilter = users.filter(u => u.id === userId);
+      if (usersFilter.length > 0 && !usersFilter[0].active) {
+        const user = usersFilter[0];
+        user.active = true;
+        // await putUser(user);
+      }
+
+      console.log(usersFilter[0].email_address);
+    });
+    
+    await this.reloadUsers();
+  }
+
   public render() {
     const { classes } = this.props;
     const { searchText, users } = this.state;
 
     return (
       <div className={classes.root}>
-        <UsersToolbar onSearchTextChange={this.onSearchTextChange} />
+        <UsersToolbar
+          onSearchTextChange={this.onSearchTextChange}
+          onBulkUsersActivate={this.onBulkUsersActivate}
+        />
         <div className={classes.content}>
           <UsersTable
-            refreshUsers={() => this.loadUsers()}
+            onUserActivate={this.activateUser}
             searchText={searchText}
             users={users}
+            onChangeSelectedUsers={this.onChangeSelectedUsers}
           />
         </div>
       </div>
