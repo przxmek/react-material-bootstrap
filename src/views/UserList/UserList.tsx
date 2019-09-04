@@ -74,20 +74,19 @@ class UserList extends React.Component<PropsType, State> {
   }
 
   private onBulkUsersActivate = async () => {
-    console.log("bulk activate");
     const { users, selectedUsers } = this.state;
+    const promises: Array<Promise<any>> = [];
 
     selectedUsers.forEach(async (userId) => {
       const usersFilter = users.filter(u => u.id === userId);
       if (usersFilter.length > 0 && !usersFilter[0].active) {
         const user = usersFilter[0];
         user.active = true;
-        // await putUser(user);
+        promises.push(putUser(user));
       }
-
-      console.log(usersFilter[0].email_address);
     });
-    
+
+    await Promise.all(promises);
     await this.reloadUsers();
   }
 

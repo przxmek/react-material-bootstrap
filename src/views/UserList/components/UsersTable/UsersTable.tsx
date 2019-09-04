@@ -22,6 +22,7 @@ import CreditCardIcon from '@material-ui/icons/CreditCard';
 
 
 import User from 'models/user';
+import { RouteComponentProps, withRouter } from 'react-router';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -60,7 +61,7 @@ interface Props {
   searchText: string;
   users: User[];
 }
-type PropsType = Props & WithStyles<typeof styles>;
+type PropsType = Props & WithStyles<typeof styles> & RouteComponentProps;
 
 interface State {
   filteredUsers: User[];
@@ -91,10 +92,34 @@ class UsersTable extends React.Component<PropsType, State> {
     }
   }
 
+  private openMailjetContact = async (emailAddress: string) => {
+    // const contact = await fetchMailjetContact(emailAddress);
+    // const id = contact.ID;
+    // const href = `https://app.mailjet.com/contacts/overview/${id}`;
+
+    const href = `https://app.mailjet.com/contacts/lists/show/GSAX`;
+    this.openInNewTab(href);
+  }
+
+  private openInNewTab(url: string) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
   private onSearchTextChange = (searchText: string) => {
     const { users } = this.props;
     const filteredUsers = this.filterUsers(searchText, users);
     this.setState({ filteredUsers, selectedUsers: [], page: 0 });
+  }
+
+  private visibleUsers = (): User[] => {
+    const { filteredUsers, rowsPerPage, page } = this.state;
+
+    return filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }
 
   private filterUsers = (filterText: string, users: User[]): User[] => {
@@ -129,12 +154,11 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   private handleSelectAll = (event: ChangeEvent, checked: boolean) => {
-    const { users } = this.props;
-
     let selectedUsers: string[];
 
     if (checked) {
-      selectedUsers = users.map(user => user.id);
+      const visibleUsers = this.visibleUsers();
+      selectedUsers = visibleUsers.map(user => user.id);
     } else {
       selectedUsers = [];
     }
@@ -190,11 +214,11 @@ class UsersTable extends React.Component<PropsType, State> {
                   <TableRow>
                     <TableCell padding="checkbox">
                       <Checkbox
-                        checked={selectedUsers.length === filteredUsers.length}
+                        checked={selectedUsers.length === this.visibleUsers().length}
                         color="primary"
                         indeterminate={
                           selectedUsers.length > 0 &&
-                          selectedUsers.length < filteredUsers.length
+                          selectedUsers.length < this.visibleUsers().length
                         }
                         onChange={this.handleSelectAll}
                       />
@@ -209,7 +233,7 @@ class UsersTable extends React.Component<PropsType, State> {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(user => (
+                  {this.visibleUsers().map(user => (
                     <TableRow
                       className={classes.tableRow}
                       hover
@@ -289,6 +313,7 @@ class UsersTable extends React.Component<PropsType, State> {
                           variant="outlined"
                           size="small"
                           className={classes.marginRight}
+                          onClick={() => this.openMailjetContact(user.email_address)}
                         >
                           <SendIcon className={clsx(classes.marginRight, classes.iconSmall)} />
                           Mailjet
@@ -317,4 +342,4 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 }
 
-export default withStyles(styles)(UsersTable);
+export default withRouter(withStyles(styles)(UsersTable));
