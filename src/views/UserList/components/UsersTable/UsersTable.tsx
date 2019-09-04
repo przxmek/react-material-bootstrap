@@ -1,4 +1,5 @@
 import React, { ChangeEvent } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import moment from 'moment';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -16,6 +17,7 @@ import {
   TablePagination,
   Theme,
   Button,
+  Link,
 } from '@material-ui/core';
 import CreateIcon from '@material-ui/icons/Create';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
@@ -248,7 +250,11 @@ class UsersTable extends React.Component<PropsType, State> {
                           value="true"
                         />
                       </TableCell>
-                      <TableCell>{user.email_address}</TableCell>
+                      <TableCell>
+                        <RouterLink to={`/account/${user.email_address}`}>
+                          <Link>{user.email_address}</Link>
+                        </RouterLink>
+                      </TableCell>
                       <TableCell>
                         {moment(user.create_date).format('DD/MM/YYYY')}
                       </TableCell>
@@ -281,6 +287,8 @@ class UsersTable extends React.Component<PropsType, State> {
                           variant="outlined"
                           size="small"
                           className={classes.marginRight}
+                          component={RouterLink}
+                          to={`template-editor/${user.email_address}`}
                         >
                           <CreateIcon className={clsx(classes.marginRight, classes.iconSmall)} />
                           Template editor

@@ -79,7 +79,7 @@ const Sidebar = props => {
     },
     {
       title: 'Account',
-      href: '/account',
+      href: '/account/przemek@pointapi.com',
       icon: <AccountBoxIcon />
     },
     {

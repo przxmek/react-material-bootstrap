@@ -17,7 +17,8 @@ import {
   Settings as SettingsView,
   SignUp as SignUpView,
   SignIn as SignInView,
-  NotFound as NotFoundView
+  NotFound as NotFoundView,
+  TemplateEditor as TemplateEditorView,
 } from './views';
 
 const Routes = () => {
@@ -69,6 +70,12 @@ const Routes = () => {
         exact
         layout={MainLayout}
         path="/settings"
+      />
+      <RouteWithLayout
+        component={TemplateEditorView}
+        exact
+        layout={MainLayout}
+        path="/template-editor/:emailAddress"
       />
       <RouteWithLayout
         component={SignUpView}

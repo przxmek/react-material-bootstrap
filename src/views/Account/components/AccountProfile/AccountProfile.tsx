@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import {
@@ -29,7 +30,7 @@ const styles = (theme: Theme) => createStyles({
   progress: {
     marginTop: theme.spacing(2)
   },
-  uploadButton: {
+  marginRight: {
     marginRight: theme.spacing(2)
   },
   userInfoText: {},
@@ -94,13 +95,14 @@ class AccountProfile extends React.Component<PropsType, State> {
         <Divider />
         <CardActions>
           <Button
-            className={classes.uploadButton}
             color="primary"
             variant="text"
+            className={classes.marginRight}
+            component={RouterLink}
+            to={`/template-editor/${account.email_address}`}
           >
-            Upload picture
-        </Button>
-          <Button variant="text">Remove picture</Button>
+            Templates
+          </Button>
         </CardActions>
       </Card>
     );
