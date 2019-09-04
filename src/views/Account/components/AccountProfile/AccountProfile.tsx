@@ -38,24 +38,17 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  account?: User;
+  account: User;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
 
-interface State {
-}
+interface State { }
 
 class AccountProfile extends React.Component<PropsType, State> {
 
   public render() {
     const { classes, className, account, ...rest } = this.props;
-
-    if (!account) {
-      return (
-        <h1>Loading..</h1>
-      );
-    }
 
     return (
       <Card

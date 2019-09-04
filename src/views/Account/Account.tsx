@@ -6,6 +6,8 @@ import { AccountProfile, AccountDetails } from './components';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { fetchUser } from 'api/users';
 import User from 'models/user';
+import Contact from 'models/mailjet/contact';
+import { fetchMailjetContact } from 'api/mailjet';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -21,6 +23,7 @@ type PropsType = WithStyles<typeof styles> & RouteComponentProps<PathParamsType>
 
 interface State {
   account?: User;
+  contact?: Contact;
 }
 
 class Account extends React.Component<PropsType, State> {
@@ -29,31 +32,38 @@ class Account extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      account: undefined
+      account: undefined,
+      contact: undefined
     };
   }
 
-  public componentDidMount() {
+  public componentDidMount = async () => {
     const emailAddress = this.props.match.params.emailAddress;
 
-    fetchUser(emailAddress)
-      .then((account: User) => {
-        this.setState({ account });
-      });
+    const account = await fetchUser(emailAddress);
+    const contact = await fetchMailjetContact(account.email_address);
+
+    this.setState({ account, contact });
   }
 
   public render() {
     const { classes } = this.props;
-    const { account } = this.state;
+    const { account, contact } = this.state;
+
+    if (!account || !contact) {
+      return (
+        <h1>Loading..</h1>
+      );
+    }
 
     return (
       <div className={classes.root}>
         <Grid container spacing={4}>
           <Grid item lg={4} md={6} xl={4} xs={12}>
-            <AccountProfile account={account} />
+            <AccountProfile account={account}/>
           </Grid>
           <Grid item lg={8} md={6} xl={8} xs={12}>
-            <AccountDetails account={account} />
+            <AccountDetails account={account} contact={contact}  />
           </Grid>
         </Grid>
       </div>

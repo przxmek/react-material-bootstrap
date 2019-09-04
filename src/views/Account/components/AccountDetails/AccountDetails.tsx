@@ -12,6 +12,7 @@ import {
   TextField
 } from '@material-ui/core';
 import User from 'models/user';
+import Contact from 'models/mailjet/contact';
 
 const styles = createStyles({
   root: {}
@@ -19,7 +20,8 @@ const styles = createStyles({
 
 interface Props {
   className?: string;
-  account?: User;
+  account: User;
+  contact: Contact;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -30,7 +32,7 @@ interface State {
 class AccountDetails extends React.Component<PropsType, State> {
 
   public render() {
-    const { classes, className, account, ...rest } = this.props;
+    const { classes, className, account, contact, ...rest } = this.props;
 
     const states = [
       {
@@ -46,13 +48,6 @@ class AccountDetails extends React.Component<PropsType, State> {
         label: 'San Francisco'
       }
     ];
-
-    if (!account) {
-      return (
-        <h1>Loading..</h1>
-      );
-    }
-
 
     return (
       <Card
@@ -86,7 +81,6 @@ class AccountDetails extends React.Component<PropsType, State> {
                   name="firstName"
                   // onChange={handleChange}
                   required
-                  value={"account.firstName"}
                   variant="outlined"
                 />
               </Grid>
@@ -102,7 +96,6 @@ class AccountDetails extends React.Component<PropsType, State> {
                   name="lastName"
                   // onChange={handleChange}
                   required
-                  value={"account.lastName"}
                   variant="outlined"
                 />
               </Grid>
@@ -134,7 +127,6 @@ class AccountDetails extends React.Component<PropsType, State> {
                   name="phone"
                   // onChange={handleChange}
                   type="number"
-                  value={"account.phone"}
                   variant="outlined"
                 />
               </Grid>
@@ -178,7 +170,6 @@ class AccountDetails extends React.Component<PropsType, State> {
                   name="country"
                   // onChange={handleChange}
                   required
-                  value={"account.country"}
                   variant="outlined"
                 />
               </Grid>
