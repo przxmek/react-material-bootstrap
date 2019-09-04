@@ -21,11 +21,11 @@ import {
 } from '@material-ui/core';
 import CreateIcon from '@material-ui/icons/Create';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
-import SendIcon from '@material-ui/icons/Send';
 
 
 import User from 'models/user';
 import { RouteComponentProps, withRouter } from 'react-router';
+import Contact from 'models/mailjet/contact';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -59,6 +59,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
+  contacts: Contact[];
   onChangeSelectedUsers: (users: string[]) => void;
   onUserActivate: (user: User) => void;
   searchText: string;
@@ -93,15 +94,6 @@ class UsersTable extends React.Component<PropsType, State> {
     if (prevProps.searchText !== searchText || prevProps.users !== users) {
       this.onSearchTextChange(searchText);
     }
-  }
-
-  private openMailjetContact = async (emailAddress: string) => {
-    // const contact = await fetchMailjetContact(emailAddress);
-    // const id = contact.ID;
-    // const href = `https://app.mailjet.com/contacts/overview/${id}`;
-
-    const href = `https://app.mailjet.com/contacts/lists/show/GSAX`;
-    this.openInNewTab(href);
   }
 
   private openInNewTab(url: string) {
@@ -200,6 +192,95 @@ class UsersTable extends React.Component<PropsType, State> {
     this.setPage(0);
   }
 
+  private getContact = (emailAddress: string): Contact | undefined => {
+    const { contacts } = this.props;
+    const filtered = contacts.filter(c => c.Email === emailAddress);
+    if (filtered.length > 0) {
+      return filtered[0];
+    } else {
+      return undefined;
+    }
+  }
+
+  private getContactStage = (contact: Contact): string | undefined => {
+    const filtered = contact.Properties.filter(p => p.Name === 'stage');
+    if (filtered.length > 0) {
+      return filtered[0].Value;
+    } else {
+      return undefined;
+    }
+  }
+
+  private changeMailjetStage = async (emailAddress: string, stage: string) => {
+    console.log(`Change MJ stage (emailAddress: ${emailAddress}, stage: ${stage})`);
+  }
+
+  /**
+   * Stages:
+   * - new_signup
+   * - onboarding
+   * - delay_onboarding 
+   * - no_survey_results 
+   * - scheduling_onboarding
+   * - onboarding_scheduled
+   * - no_scheduled_meeting
+   * 
+   * Transitions:
+   * - new_signup -> onboarding; delay_onboarding
+   * - onboarding -> delay_onboarding; no_survey_results; scheduling_onboarding
+   * - delay_onboarding -> onboarding
+   * - no_survey_results -> X
+   * - scheduling_onboarding -> onboarding_scheduled; no_scheduled_meeting
+   * - onboarding_scheduled -> X
+   * - no_scheduled_meeting -> X
+   */
+  private renderMailjetStageButtons(emailAddress: string) {
+    const { classes } = this.props;
+
+    const transitions = {
+      new_signup: ['onboarding', 'delay_onboarding'],
+      onboarding: ['delay_onboarding', 'no_survey_results', 'scheduling_onboarding'],
+      delay_onboarding: ['onboarding'],
+      no_survey_results: [],
+      scheduling_onboarding: ['onboarding_scheduled', 'no_scheduled_meeting'],
+      onboarding_scheduled: [],
+      no_scheduled_meeting: [],
+    };
+
+    const contact = this.getContact(emailAddress);
+    if (!contact) {
+      return (<>
+        Missing Mailjet contact
+      </>);
+    }
+
+    const contactStage = this.getContactStage(contact);
+    if (!contactStage) {
+      return (<>
+        Mailjet contact missing 'stage' property
+      </>);
+    }
+
+    if (!(contactStage in transitions)) {
+      return (<>
+        Unknown Mailjet stage: {contactStage}
+      </>);
+    }
+
+    const stages = (transitions as any)[contactStage] as string[];
+    return stages.map(stage => (
+      <Button
+        color="secondary"
+        variant="outlined"
+        size="small"
+        className={classes.marginRight}
+        onClick={() => this.changeMailjetStage(emailAddress, stage)}
+      >
+        {stage}
+      </Button>
+    ));
+  }
+
   public render() {
     const { className, classes, onUserActivate, ...rest } = this.props;
     const { filteredUsers, page, rowsPerPage, selectedUsers } = this.state;
@@ -230,7 +311,7 @@ class UsersTable extends React.Component<PropsType, State> {
                     <TableCell>Registration date</TableCell>
                     <TableCell>Last login</TableCell>
                     <TableCell>Manage</TableCell>
-                    <TableCell>Onboarding</TableCell>
+                    <TableCell>Change stage</TableCell>
                     <TableCell>Activation</TableCell>
                   </TableRow>
                 </TableHead>
@@ -277,16 +358,6 @@ class UsersTable extends React.Component<PropsType, State> {
                           variant="outlined"
                           size="small"
                           className={classes.marginRight}
-                          onClick={() => this.openMailjetContact(user.email_address)}
-                        >
-                          <SendIcon className={clsx(classes.marginRight, classes.iconSmall)} />
-                          Mailjet
-                        </Button>
-
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          className={classes.marginRight}
                           component={RouterLink}
                           to={`template-editor/${user.email_address}`}
                         >
@@ -295,22 +366,7 @@ class UsersTable extends React.Component<PropsType, State> {
                         </Button>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          color="primary"
-                          variant="outlined"
-                          size="small"
-                          className={classes.marginRight}
-                        >
-                          Start
-                        </Button>
-
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          className={classes.marginRight}
-                        >
-                          Delay
-                        </Button>
+                        {this.renderMailjetStageButtons(user.email_address)}
                       </TableCell>
                       <TableCell>
                         <Button

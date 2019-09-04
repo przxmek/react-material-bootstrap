@@ -5,6 +5,8 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import { UsersToolbar, UsersTable } from './components';
 import User from 'models/user';
 import { fetchUsers, putUser } from 'api/users';
+import { fetchMailjetContacts } from 'api/mailjet';
+import Contact from 'models/mailjet/contact';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -18,6 +20,7 @@ const styles = (theme: Theme) => createStyles({
 type PropsType = WithStyles<typeof styles>;
 
 interface State {
+  contacts: Contact[];
   searchText: string;
   selectedUsers: string[];
   users: User[];
@@ -29,12 +32,18 @@ class UserList extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
+      contacts: [],
       searchText: '',
       selectedUsers: [],
       users: [],
     };
+  }
 
-    this.reloadUsers();
+  public componentDidMount = async () => {
+    const contacts = await fetchMailjetContacts();
+    const users = await this.reloadUsers();
+
+    this.setState({ contacts, users });
   }
 
   private reloadUsers = async () => {
@@ -54,7 +63,7 @@ class UserList extends React.Component<PropsType, State> {
       return -1;
     });
 
-    this.setState({ users });
+    return users;
   }
 
   private onSearchTextChange = (searchText: string) => {
@@ -92,7 +101,7 @@ class UserList extends React.Component<PropsType, State> {
 
   public render() {
     const { classes } = this.props;
-    const { searchText, users } = this.state;
+    const { contacts, searchText, users } = this.state;
 
     return (
       <div className={classes.root}>
@@ -102,10 +111,11 @@ class UserList extends React.Component<PropsType, State> {
         />
         <div className={classes.content}>
           <UsersTable
+            contacts={contacts}
             onUserActivate={this.activateUser}
+            onChangeSelectedUsers={this.onChangeSelectedUsers}
             searchText={searchText}
             users={users}
-            onChangeSelectedUsers={this.onChangeSelectedUsers}
           />
         </div>
       </div>

@@ -12,4 +12,12 @@ export default interface Contact {
   Name: string;
   UnsubscribedAt: string;
   UnsubscribedBy: string;
+
+  // Contact Properties
+  Properties: ContactProperty[];
+}
+
+interface ContactProperty {
+  Name: string;
+  Value: string;
 }
