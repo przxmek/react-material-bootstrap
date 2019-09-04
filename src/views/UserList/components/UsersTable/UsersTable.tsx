@@ -17,8 +17,9 @@ import {
   Theme,
   Button,
 } from '@material-ui/core';
-import SendIcon from '@material-ui/icons/Send';
+import CreateIcon from '@material-ui/icons/Create';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
+import SendIcon from '@material-ui/icons/Send';
 
 
 import User from 'models/user';
@@ -223,13 +224,12 @@ class UsersTable extends React.Component<PropsType, State> {
                         onChange={this.handleSelectAll}
                       />
                     </TableCell>
-                    {/* <TableCell>Name</TableCell> */}
                     <TableCell>Email</TableCell>
-                    {/* <TableCell>Location</TableCell> */}
-                    {/* <TableCell>Phone</TableCell> */}
                     <TableCell>Registration date</TableCell>
                     <TableCell>Last login</TableCell>
                     <TableCell>Manage</TableCell>
+                    <TableCell>Onboarding</TableCell>
+                    <TableCell>Activation</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -248,57 +248,15 @@ class UsersTable extends React.Component<PropsType, State> {
                           value="true"
                         />
                       </TableCell>
-                      {/* <TableCell>
-                        <div className={classes.nameContainer}>
-                          <Avatar
-                            className={classes.avatar}
-                            src={user.avatarUrl}
-                          >
-                            {getInitials(user.name)}
-                          </Avatar>
-                          <Typography variant="body1">{user.name}</Typography>
-                        </div>
-                      </TableCell> */}
                       <TableCell>{user.email_address}</TableCell>
-                      {/* <TableCell>
-                        {user.address != null && (<>
-                          {user.address.city}, {user.address.state}, {' '}
-                          {user.address.country}
-                        </>)}
-                      </TableCell> */}
-                      {/* <TableCell>{user.phone}</TableCell> */}
                       <TableCell>
                         {moment(user.create_date).format('DD/MM/YYYY')}
                       </TableCell>
                       <TableCell>
                         {user.last_login && (<>{moment(user.last_login).format('DD/MM/YYYY')}</>)}
                         {!user.last_login && (<>--</>)}
-
                       </TableCell>
                       <TableCell>
-                        {(user.active) && (
-                          <Button
-                            disabled
-                            color="primary"
-                            variant="outlined"
-                            size="small"
-                            className={classes.marginRight}
-                          >
-                            Activated
-                          </Button>
-                        )}
-                        {(!user.active) && (
-                          <Button
-                            color="primary"
-                            variant="outlined"
-                            size="small"
-                            className={classes.marginRight}
-                            onClick={() => onUserActivate(user)}
-                          >
-                            Activate
-                          </Button>
-                        )}
-
                         <Button
                           variant="outlined"
                           size="small"
@@ -317,6 +275,44 @@ class UsersTable extends React.Component<PropsType, State> {
                         >
                           <SendIcon className={clsx(classes.marginRight, classes.iconSmall)} />
                           Mailjet
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          className={classes.marginRight}
+                        >
+                          <CreateIcon className={clsx(classes.marginRight, classes.iconSmall)} />
+                          Template editor
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                          className={classes.marginRight}
+                        >
+                          Start
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          className={classes.marginRight}
+                        >
+                          Delay
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          disabled={user.active}
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                          className={classes.marginRight}
+                        >
+                          {user.active ? "Activated" : "Activate"}
                         </Button>
                       </TableCell>
                     </TableRow>
