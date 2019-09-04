@@ -1,17 +1,37 @@
+const prod = {
+  API_URL: "http://localhost:5000",
+  SNIPPET_GENERATOR_URL: "http://snippet-generator.us-west-2.elasticbeanstalk.com",
+  SNIPPET_GENERATOR_USER: "point",
+  SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
+};
+
+const dev = {
+  API_URL: "http://localhost:5000",
+  SNIPPET_GENERATOR_URL: "http://dev-snippet-generator.us-west-2.elasticbeanstalk.com",
+  SNIPPET_GENERATOR_USER: "point",
+  SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
+};
+
 const local = {
-  API_URL: "http://localhost:5000"
+  API_URL: "http://localhost:5000",
+  SNIPPET_GENERATOR_URL: "http://dev-snippet-generator.us-west-2.elasticbeanstalk.com",
+  SNIPPET_GENERATOR_USER: "point",
+  SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
 };
 
 let config;
 switch (process.env.REACT_APP_ENV) {
   case "prod":
-    config = local;
+    config = prod;
     break;
   case "dev":
-    config = local;
+    config = dev;
     break;
   default:
     config = local;
 }
 
 export const API_URL = config.API_URL;
+export const SNIPPET_GENERATOR_URL = config.SNIPPET_GENERATOR_URL;
+export const SNIPPET_GENERATOR_USER = config.SNIPPET_GENERATOR_USER;
+export const SNIPPET_GENERATOR_PASS = config.SNIPPET_GENERATOR_PASS;
