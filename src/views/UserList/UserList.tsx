@@ -40,10 +40,8 @@ class UserList extends React.Component<PropsType, State> {
   }
 
   public componentDidMount = async () => {
-    const contacts = await fetchMailjetContacts();
-    const users = await this.reloadUsers();
-
-    this.setState({ contacts, users });
+    await this.reloadMailjetContacts();
+    await this.reloadUsers();
   }
 
   private reloadUsers = async () => {
@@ -63,7 +61,12 @@ class UserList extends React.Component<PropsType, State> {
       return -1;
     });
 
-    return users;
+    this.setState({ users });
+  }
+
+  private reloadMailjetContacts = async () => {
+    const contacts = await fetchMailjetContacts();
+    this.setState({ contacts });
   }
 
   private onSearchTextChange = (searchText: string) => {
@@ -114,6 +117,7 @@ class UserList extends React.Component<PropsType, State> {
             contacts={contacts}
             onUserActivate={this.activateUser}
             onChangeSelectedUsers={this.onChangeSelectedUsers}
+            onMailjetUpdate={this.reloadMailjetContacts}
             searchText={searchText}
             users={users}
           />

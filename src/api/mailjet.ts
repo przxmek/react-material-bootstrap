@@ -21,3 +21,27 @@ export async function fetchMailjetContact(emailAddress: string): Promise<Contact
   const json = await response.json();
   return json;
 }
+
+
+/**
+ * Change Contact's stage.
+ * @param emailAddress Contact's email address
+ */
+export async function changeContactStage(emailAddress: string, stage: string): Promise<void | any> {
+  const response = await fetch(
+    `${API_URL}/mailjet/contact/${emailAddress}/stage`, {
+      method: 'PUT',
+      body: JSON.stringify({ stage }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+  if (response.status === 204) {
+    return;
+  } else {
+    const json = await response.json();
+    return json;
+  }
+}
+

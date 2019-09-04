@@ -26,6 +26,7 @@ import CreditCardIcon from '@material-ui/icons/CreditCard';
 import User from 'models/user';
 import { RouteComponentProps, withRouter } from 'react-router';
 import Contact from 'models/mailjet/contact';
+import { changeContactStage } from 'api/mailjet';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -46,6 +47,9 @@ const styles = (theme: Theme) => createStyles({
   actions: {
     justifyContent: 'flex-end'
   },
+  buttonMargin: {
+    margin: theme.spacing(0.5)
+  },
   marginRight: {
     marginRight: theme.spacing(1)
   },
@@ -61,6 +65,7 @@ interface Props {
   className?: string;
   contacts: Contact[];
   onChangeSelectedUsers: (users: string[]) => void;
+  onMailjetUpdate: () => void;
   onUserActivate: (user: User) => void;
   searchText: string;
   users: User[];
@@ -212,7 +217,11 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   private changeMailjetStage = async (emailAddress: string, stage: string) => {
-    console.log(`Change MJ stage (emailAddress: ${emailAddress}, stage: ${stage})`);
+    const { onMailjetUpdate } = this.props;
+
+    await changeContactStage(emailAddress, stage);
+
+    onMailjetUpdate();
   }
 
   /**
@@ -249,22 +258,28 @@ class UsersTable extends React.Component<PropsType, State> {
 
     const contact = this.getContact(emailAddress);
     if (!contact) {
-      return (<>
-        Missing Mailjet contact
-      </>);
+      return (
+        <Button disabled variant="text" size="small">
+          Missing Mailjet Contact
+        </Button>
+      );
     }
 
     const contactStage = this.getContactStage(contact);
     if (!contactStage) {
-      return (<>
-        Mailjet contact missing 'stage' property
-      </>);
+      return (
+        <Button disabled variant="text" size="small">
+          Mailjet contact missing 'stage' property
+        </Button>
+      );
     }
 
     if (!(contactStage in transitions)) {
-      return (<>
-        Unknown Mailjet stage: {contactStage}
-      </>);
+      return (
+        <Button disabled variant="text" size="small">
+          Unknown Mailjet stage: {contactStage}
+        </Button>
+      );
     }
 
     const stages = (transitions as any)[contactStage] as string[];
@@ -273,12 +288,85 @@ class UsersTable extends React.Component<PropsType, State> {
         color="secondary"
         variant="outlined"
         size="small"
-        className={classes.marginRight}
+        className={classes.buttonMargin}
         onClick={() => this.changeMailjetStage(emailAddress, stage)}
       >
         {stage}
       </Button>
     ));
+  }
+
+  private renderTableRow(user: User) {
+    const { classes } = this.props;
+    const { selectedUsers } = this.state;
+
+    const contact = this.getContact(user.email_address);
+    const stage = contact ? this.getContactStage(contact) : '--';
+
+    return (
+      <TableRow
+        className={classes.tableRow}
+        hover
+        key={user.id}
+        selected={selectedUsers.indexOf(user.id) !== -1}
+      >
+        <TableCell padding="checkbox">
+          <Checkbox
+            checked={selectedUsers.indexOf(user.id) !== -1}
+            color="primary"
+            onChange={event => this.handleSelectOne(event, user.id)}
+            value="true"
+          />
+        </TableCell>
+        <TableCell>
+          <RouterLink to={`/account/${user.email_address}`}>
+            <Link>{user.email_address}</Link>
+          </RouterLink>
+        </TableCell>
+        <TableCell>
+          {moment(user.create_date).format('DD/MM/YYYY')}
+        </TableCell>
+        <TableCell>
+          {stage}
+        </TableCell>
+        <TableCell>
+          {this.renderMailjetStageButtons(user.email_address)}
+        </TableCell>
+        <TableCell>
+          <Button
+            variant="outlined"
+            size="small"
+            className={classes.buttonMargin}
+            href={"https://dashboard.stripe.com/search?query=" + user.email_address}
+          >
+            <CreditCardIcon className={clsx(classes.marginRight, classes.iconSmall)} />
+            Stripe
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="small"
+            className={classes.buttonMargin}
+            component={RouterLink}
+            to={`template-editor/${user.email_address}`}
+          >
+            <CreateIcon className={clsx(classes.marginRight, classes.iconSmall)} />
+            Template editor
+          </Button>
+        </TableCell>
+        <TableCell>
+          <Button
+            disabled={user.active}
+            color="primary"
+            variant="outlined"
+            size="small"
+            className={classes.buttonMargin}
+          >
+            {user.active ? "Activated" : "Activate"}
+          </Button>
+        </TableCell>
+      </TableRow>
+    );
   }
 
   public render() {
@@ -309,78 +397,14 @@ class UsersTable extends React.Component<PropsType, State> {
                     </TableCell>
                     <TableCell>Email</TableCell>
                     <TableCell>Registration date</TableCell>
-                    <TableCell>Last login</TableCell>
-                    <TableCell>Manage</TableCell>
+                    <TableCell>Mailjet Stage</TableCell>
                     <TableCell>Change stage</TableCell>
+                    <TableCell>Manage</TableCell>
                     <TableCell>Activation</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {this.visibleUsers().map(user => (
-                    <TableRow
-                      className={classes.tableRow}
-                      hover
-                      key={user.id}
-                      selected={selectedUsers.indexOf(user.id) !== -1}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={selectedUsers.indexOf(user.id) !== -1}
-                          color="primary"
-                          onChange={event => this.handleSelectOne(event, user.id)}
-                          value="true"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <RouterLink to={`/account/${user.email_address}`}>
-                          <Link>{user.email_address}</Link>
-                        </RouterLink>
-                      </TableCell>
-                      <TableCell>
-                        {moment(user.create_date).format('DD/MM/YYYY')}
-                      </TableCell>
-                      <TableCell>
-                        {user.last_login && (<>{moment(user.last_login).format('DD/MM/YYYY')}</>)}
-                        {!user.last_login && (<>--</>)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          className={classes.marginRight}
-                          href={"https://dashboard.stripe.com/search?query=" + user.email_address}
-                        >
-                          <CreditCardIcon className={clsx(classes.marginRight, classes.iconSmall)} />
-                          Stripe
-                        </Button>
-
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          className={classes.marginRight}
-                          component={RouterLink}
-                          to={`template-editor/${user.email_address}`}
-                        >
-                          <CreateIcon className={clsx(classes.marginRight, classes.iconSmall)} />
-                          Template editor
-                        </Button>
-                      </TableCell>
-                      <TableCell>
-                        {this.renderMailjetStageButtons(user.email_address)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          disabled={user.active}
-                          color="primary"
-                          variant="outlined"
-                          size="small"
-                          className={classes.marginRight}
-                        >
-                          {user.active ? "Activated" : "Activate"}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {this.visibleUsers().map(user => this.renderTableRow(user))}
                 </TableBody>
               </Table>
             </div>
