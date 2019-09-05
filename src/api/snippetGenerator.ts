@@ -15,11 +15,21 @@ export type SnippetType = "templates" | "snippets";
 
 
 export async function fetchTemplates(emailAddress: string): Promise<TemplatesResponse> {
-  return await fetchSnippetsInternal(emailAddress, "templates");
+  const response = await fetchSnippetsInternal(emailAddress, "templates");
+
+  // Flatten templates array madness
+  response.templates = [].concat(...response.templates);
+
+  return response;
 }
 
 export async function fetchSnippets(emailAddress: string): Promise<SnippetsResponse> {
-  return await fetchSnippetsInternal(emailAddress, "snippets");
+  const response = await fetchSnippetsInternal(emailAddress, "snippets");
+
+  // Convert snippet objects into simple strings
+  const snippets = response.map((s: { snippet: string }) => s.snippet);
+
+  return snippets;
 }
 
 export async function generateTemplates(emailAddress: string): Promise<TemplatesResponse> {

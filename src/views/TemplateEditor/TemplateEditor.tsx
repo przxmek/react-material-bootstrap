@@ -1,11 +1,13 @@
-import { Theme, Typography, Box } from '@material-ui/core';
+import { Box, Theme, Typography } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
-import { fetchSnippets, generateSnippets, fetchTemplates, generateTemplates } from 'api/snippetGenerator';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
-import { TemplateEditorToolbar, SnippetsList } from './components';
-import { Template, Snippet, HandwrittenEmail } from 'models/snippetGenerator';
+import { fetchSnippets, fetchTemplates, generateSnippets, generateTemplates } from 'api/snippetGenerator';
+import { HandwrittenEmail, Snippet, Template } from 'models/snippetGenerator';
+
+import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
+
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -22,11 +24,13 @@ interface PathParamsType {
 
 type PropsType = WithStyles<typeof styles> & RouteComponentProps<PathParamsType>;
 
+export type ItemType = 'snippet' | 'template' | 'handwrittenEmail';
 interface State {
   handwrittenEmails?: HandwrittenEmail[];
   snippets?: Snippet[];
   templates?: Template[];
-  selectedItem?: any;
+  selectedItem?: string;
+  selectedType?: ItemType;
 }
 
 class TemplateEditor extends React.Component<PropsType, State> {
@@ -38,6 +42,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
       snippets: undefined,
       templates: undefined,
       selectedItem: undefined,
+      selectedType: undefined
     };
   }
 
@@ -45,9 +50,11 @@ class TemplateEditor extends React.Component<PropsType, State> {
     const { emailAddress } = this.props.match.params;
 
     const templatesResponse = await fetchTemplates(emailAddress);
-    const templates = templatesResponse.templates;
-    const handwrittenEmails = templatesResponse.handwritten_emails;
+    const templates = templatesResponse.templates ? templatesResponse.templates : [];
+    const handwrittenEmails = templatesResponse.handwritten_emails ? templatesResponse.handwritten_emails : [];
     const snippets = await fetchSnippets(emailAddress);
+
+    // debugger;
 
     this.setState({ handwrittenEmails, templates, snippets });
   }
@@ -66,8 +73,33 @@ class TemplateEditor extends React.Component<PropsType, State> {
     this.setState({ snippets });
   }
 
-  private onListItemSelected = (item: any) => {
-    this.setState({ selectedItem: item });
+  private onListItemSelected = (item: string, type: ItemType) => {
+    this.setState({ selectedType: type, selectedItem: item });
+  }
+
+  private onSelectedItemTextChange = (text: string) => {
+    const { selectedType, selectedItem } = this.state;
+
+    if (!selectedType || !selectedItem) {
+      return;
+    }
+
+    if (selectedType === 'handwrittenEmail' && this.state.handwrittenEmails) {
+      const handwrittenEmails = this.state.handwrittenEmails.slice();
+      const idx = handwrittenEmails.indexOf(selectedItem);
+      handwrittenEmails[idx] = text;
+      this.setState({ handwrittenEmails, selectedItem: text });
+    } else if (selectedType === 'snippet' && this.state.snippets) {
+      const snippets = this.state.snippets.slice();
+      const idx = snippets.indexOf(selectedItem);
+      snippets[idx] = text;
+      this.setState({ snippets, selectedItem: text });
+    } else if (selectedType === 'template' && this.state.templates) {
+      const templates = this.state.templates.slice();
+      const idx = templates.indexOf(selectedItem);
+      templates[idx] = text;
+      this.setState({ templates, selectedItem: text });
+    }
   }
 
   public render() {
@@ -102,7 +134,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
             <Typography>Select an item from the list first.</Typography>
           )}
           {selectedItem && (
-            <Typography>{selectedItem}</Typography>
+            <RichTextEditor text={selectedItem} onTextChange={this.onSelectedItemTextChange} />
           )}
 
         </Box>

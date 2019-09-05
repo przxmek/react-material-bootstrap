@@ -2,14 +2,15 @@ import { Theme, List, ListSubheader, ListItem, ListItemText } from '@material-ui
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
+
 import { Snippet, HandwrittenEmail, Template } from 'models/snippetGenerator';
+import { ItemType } from 'views/TemplateEditor/TemplateEditor';
 
 const styles = (theme: Theme) => createStyles({
   root: {
     width: '100%',
     maxWidth: 480,
     backgroundColor: theme.palette.background.paper,
-    // position: 'relative',
     overflow: 'auto',
     maxHeight: 800,
   },
@@ -31,7 +32,7 @@ interface Props {
   handwrittenEmails: HandwrittenEmail[];
   snippets: Snippet[];
   templates: Template[];
-  onItemSelected: (item: any) => void;
+  onItemSelected: (item: string, type: ItemType) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -49,9 +50,9 @@ class SnippetsList extends React.Component<PropsType, State> {
         <li key={`section-snippets`} className={classes.listSection}>
           <ul className={classes.ul}>
             <ListSubheader className={classes.listSubheader}>{`Snippets`}</ListSubheader>
-            {snippets.map(s => (
-              <ListItem button key={`item-snippets-${s.snippet}`} onClick={() => onItemSelected(s)}>
-                <ListItemText primary={s.snippet} />
+            {snippets.map((s, idx) => (
+              <ListItem button key={`item-snippets-${idx}`} onClick={() => onItemSelected(s, 'snippet')}>
+                <ListItemText primary={s} />
               </ListItem>
             ))}
           </ul>
@@ -60,8 +61,8 @@ class SnippetsList extends React.Component<PropsType, State> {
         <li key={`section-templates`} className={classes.listSection}>
           <ul className={classes.ul}>
             <ListSubheader className={classes.listSubheader}>{`Templates`}</ListSubheader>
-            {templates.map(t => (
-              <ListItem button key={`item-templates-${t}`} onClick={() => onItemSelected(t)}>
+            {templates.map((t, idx) => (
+              <ListItem button key={`item-templates-${idx}`} onClick={() => onItemSelected(t, 'template')}>
                 <ListItemText primary={t} />
               </ListItem>
             ))}
@@ -71,8 +72,8 @@ class SnippetsList extends React.Component<PropsType, State> {
         <li key={`section-handwrittenEmails`} className={classes.listSection}>
           <ul className={classes.ul}>
             <ListSubheader className={classes.listSubheader}>{`Handwritten emails`}</ListSubheader>
-            {handwrittenEmails.map(h => (
-              <ListItem button key={`item-handwrittenEmails-${h}`} onClick={() => onItemSelected(h)}>
+            {handwrittenEmails.map((h, idx) => (
+              <ListItem button key={`item-handwrittenEmails-${idx}`} onClick={() => onItemSelected(h, 'handwrittenEmail')}>
                 <ListItemText primary={h} />
               </ListItem>
             ))}
