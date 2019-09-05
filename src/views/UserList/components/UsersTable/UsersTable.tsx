@@ -285,6 +285,7 @@ class UsersTable extends React.Component<PropsType, State> {
     const stages = (transitions as any)[contactStage] as string[];
     return stages.map(stage => (
       <Button
+        key={stage}
         color="secondary"
         variant="outlined"
         size="small"
@@ -297,7 +298,7 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   private renderTableRow(user: User) {
-    const { classes } = this.props;
+    const { classes, onUserActivate } = this.props;
     const { selectedUsers } = this.state;
 
     const contact = this.getContact(user.email_address);
@@ -319,9 +320,9 @@ class UsersTable extends React.Component<PropsType, State> {
           />
         </TableCell>
         <TableCell>
-          <RouterLink to={`/account/${user.email_address}`}>
-            <Link>{user.email_address}</Link>
-          </RouterLink>
+          <Link component={RouterLink} to={`/account/${user.email_address}`}>
+            {user.email_address}
+          </Link>
         </TableCell>
         <TableCell>
           {moment(user.create_date).format('DD/MM/YYYY')}
@@ -361,6 +362,7 @@ class UsersTable extends React.Component<PropsType, State> {
             variant="outlined"
             size="small"
             className={classes.buttonMargin}
+            onClick={() => onUserActivate(user)}
           >
             {user.active ? "Activated" : "Activate"}
           </Button>
@@ -370,14 +372,11 @@ class UsersTable extends React.Component<PropsType, State> {
   }
 
   public render() {
-    const { className, classes, onUserActivate, ...rest } = this.props;
+    const { className, classes } = this.props;
     const { filteredUsers, page, rowsPerPage, selectedUsers } = this.state;
 
     return (
-      <Card
-        {...rest}
-        className={clsx(classes.root, className)}
-      >
+      <Card className={clsx(classes.root, className)}>
         <CardContent className={classes.content}>
           <PerfectScrollbar>
             <div className={classes.inner}>
