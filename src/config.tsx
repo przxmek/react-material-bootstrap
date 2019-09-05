@@ -14,7 +14,7 @@ const dev = {
 
 const local = {
   API_URL: "http://localhost:5000",
-  SNIPPET_GENERATOR_URL: "http://dev-snippet-generator.us-west-2.elasticbeanstalk.com",
+  SNIPPET_GENERATOR_URL: "http://localhost:5001",
   SNIPPET_GENERATOR_USER: "point",
   SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
 };
