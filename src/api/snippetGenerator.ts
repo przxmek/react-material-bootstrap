@@ -20,47 +20,28 @@ export async function fetchTemplates(
   emailAddress: string
 ): Promise<TemplatesResponse> {
   const response = await fetchSnippetsInternal(emailAddress, "templates");
-
-  // Flatten templates array madness
-  response.templates = [].concat(...response.templates);
-
-  // Convert strings into Snippet objects
-  response.templates = response.templates.map(
-    (s: string, idx: number) =>
-      wrapIntoObject(s, `template-${idx + 1}`)
-  );
-  response.handwritten_emails = response.handwritten_emails.map(
-    (s: string, idx: number) =>
-      wrapIntoObject(s, `handwritten-email-${idx + 1}`)
-  );
-
-  return response;
+  return processTemplatesResponse(response);
 }
 
 export async function fetchSnippets(
   emailAddress: string
 ): Promise<SnippetsResponse> {
   const response = await fetchSnippetsInternal(emailAddress, "snippets");
-
-  // Convert snippet objects into Snippet objects
-  const snippets = response.map(
-    (s: { snippet: string }, idx: number) =>
-      wrapIntoObject(s.snippet, `snippet-${idx + 1}`)
-  );
-
-  return snippets;
+  return processSnippetsResponse(response);
 }
 
 export async function generateTemplates(
   emailAddress: string
 ): Promise<TemplatesResponse> {
-  return await generateSnippetsInternal(emailAddress, "templates");
+  const response = await generateSnippetsInternal(emailAddress, "templates");
+  return processTemplatesResponse(response);
 }
 
 export async function generateSnippets(
   emailAddress: string
 ): Promise<SnippetsResponse> {
-  return await generateSnippetsInternal(emailAddress, "snippets");
+  const response = await generateSnippetsInternal(emailAddress, "snippets");
+  return processSnippetsResponse(response);
 }
 
 export async function applySnippets(
@@ -135,4 +116,31 @@ function wrapIntoObject(snippet: string, trigger: string = '', score?: number): 
     snippet,
     score,
   };
+}
+
+function processTemplatesResponse(response: any) {
+  // Flatten templates array madness
+  response.templates = [].concat(...response.templates);
+
+  // Convert strings into Snippet objects
+  response.templates = response.templates.map(
+    (s: string, idx: number) =>
+      wrapIntoObject(s, `template-${idx + 1}`)
+  );
+  response.handwritten_emails = response.handwritten_emails.map(
+    (s: string, idx: number) =>
+      wrapIntoObject(s, `handwritten-email-${idx + 1}`)
+  );
+
+  return response;
+}
+
+function processSnippetsResponse(response: any) {
+  // Convert snippet objects into Snippet objects
+  response = response.map(
+    (s: { snippet: string }, idx: number) =>
+      wrapIntoObject(s.snippet, `snippet-${idx + 1}`)
+  );
+
+  return response;
 }
