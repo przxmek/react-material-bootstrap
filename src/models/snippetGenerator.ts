@@ -1,13 +1,13 @@
 export interface TemplatesResponse {
-  handwritten_emails?: string[];
-  templates?: string[];
+  handwritten_emails?: Snippet[];
+  templates?: Snippet[];
 }
 
-export type SnippetsResponse = string[];
+export type SnippetsResponse = Snippet[];
 
 
 export interface Snippet {
-  trigger?: string;
+  trigger: string;
   snippet: string;
   score?: number;
 }

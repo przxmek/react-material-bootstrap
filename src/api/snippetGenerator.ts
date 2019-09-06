@@ -24,6 +24,16 @@ export async function fetchTemplates(
   // Flatten templates array madness
   response.templates = [].concat(...response.templates);
 
+  // Convert strings into Snippet objects
+  response.templates = response.templates.map(
+    (s: string, idx: number) =>
+      wrapIntoObject(s, `template-${idx + 1}`)
+  );
+  response.handwritten_emails = response.handwritten_emails.map(
+    (s: string, idx: number) =>
+      wrapIntoObject(s, `handwritten-email-${idx + 1}`)
+  );
+
   return response;
 }
 
@@ -32,8 +42,11 @@ export async function fetchSnippets(
 ): Promise<SnippetsResponse> {
   const response = await fetchSnippetsInternal(emailAddress, "snippets");
 
-  // Convert snippet objects into simple strings
-  const snippets = response.map((s: { snippet: string }) => s.snippet);
+  // Convert snippet objects into Snippet objects
+  const snippets = response.map(
+    (s: { snippet: string }, idx: number) =>
+      wrapIntoObject(s.snippet, `snippet-${idx + 1}`)
+  );
 
   return snippets;
 }
@@ -114,4 +127,12 @@ async function applySnippetsInternal(
 
   const json = await response.json();
   return json;
+}
+
+function wrapIntoObject(snippet: string, trigger: string = '', score?: number): Snippet {
+  return {
+    trigger,
+    snippet,
+    score,
+  };
 }

@@ -4,6 +4,7 @@ import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteOutlined';
 import * as ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { Snippet } from 'models/snippetGenerator';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -22,10 +23,10 @@ const styles = (theme: Theme) => createStyles({
 });
 
 interface Props {
-  text: string;
-  onApply: (text: string, trigger?: string) => void;
-  onRemove: () => void;
-  onSave: (text: string) => void;
+  snippet: Snippet;
+  onApply: (snippet: Snippet, newText: string, newTrigger: string) => void;
+  onRemove: (snippet: Snippet) => void;
+  onSave: (snippet: Snippet, newText: string, newTrigger: string) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -63,15 +64,15 @@ class RichTextEditor extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      text: props.text,
-      trigger: '',
+      text: props.snippet.snippet,
+      trigger: props.snippet.trigger,
     };
   }
 
   public componentDidUpdate(prevProps: PropsType) {
-    const { text } = this.props;
-    if (text !== prevProps.text) {
-      this.setState({ text });
+    const { snippet } = this.props;
+    if (snippet !== prevProps.snippet) {
+      this.setState({ text: snippet.snippet, trigger: snippet.trigger });
     }
   }
 
@@ -84,7 +85,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
   }
 
   public render() {
-    const { classes, onApply, onRemove, onSave } = this.props;
+    const { classes, onApply, onRemove, onSave, snippet } = this.props;
     const { text, trigger } = this.state;
 
     return (
@@ -109,20 +110,20 @@ class RichTextEditor extends React.Component<PropsType, State> {
         />
         <Grid container spacing={1}>
           <Grid item>
-            <Button variant="outlined" onClick={onRemove}>
+            <Button variant="outlined" onClick={() => onRemove(snippet)}>
               <DeleteIcon className={classes.iconLeft} />
               Remove
             </Button>
           </Grid>
           <Grid item xs></Grid>
           <Grid item>
-            <Button variant="outlined" onClick={() => onSave(text)}>
-              Save edits
+            <Button variant="outlined" onClick={() => onApply(snippet, text, trigger)}>
+              Apply to profile
             </Button>
           </Grid>
           <Grid item>
-            <Button variant="contained" color="primary" onClick={() => onApply(text, trigger)}>
-              Apply to profile
+            <Button variant="contained" color="primary" onClick={() => onSave(snippet, text, trigger)}>
+              Save edits
             </Button>
           </Grid>
         </Grid>

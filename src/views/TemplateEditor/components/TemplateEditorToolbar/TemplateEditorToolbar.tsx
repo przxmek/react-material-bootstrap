@@ -24,6 +24,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
+  onApplyAll: () => void;
   onGenerateSnippets: () => void;
   onGenerateTemplates: () => void;
 }
@@ -36,7 +37,13 @@ interface State {
 class TemplateEditorToolbar extends React.Component<PropsType, State> {
 
   public render() {
-    const { classes, className, onGenerateSnippets, onGenerateTemplates } = this.props;
+    const {
+      classes,
+      className,
+      onApplyAll,
+      onGenerateSnippets,
+      onGenerateTemplates
+    } = this.props;
 
     return (
       <div className={clsx(classes.root, className)}>
@@ -60,6 +67,17 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
               onClick={onGenerateTemplates}
             >
               Generate templates
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Apply all snippets to Prometheus profile">
+            <Button
+              variant="contained"
+              color="primary"
+              className={classes.marginRight}
+              onClick={onApplyAll}
+            >
+              Apply all
             </Button>
           </Tooltip>
 
