@@ -2,10 +2,13 @@ import { Box, Theme, Typography } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-
-import { fetchSnippets, fetchTemplates, generateSnippets, generateTemplates } from 'api/snippetGenerator';
-import { HandwrittenEmail, Snippet, Template } from 'models/snippetGenerator';
-
+import {
+  fetchSnippets,
+  fetchTemplates,
+  generateSnippets,
+  generateTemplates,
+  applySnippets
+} from 'api/snippetGenerator';
 import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
 import { Loading } from 'components';
 
@@ -27,9 +30,9 @@ type PropsType = WithStyles<typeof styles> & RouteComponentProps<PathParamsType>
 
 export type ItemType = 'snippet' | 'template' | 'handwrittenEmail';
 interface State {
-  handwrittenEmails?: HandwrittenEmail[];
-  snippets?: Snippet[];
-  templates?: Template[];
+  handwrittenEmails?: string[];
+  snippets?: string[];
+  templates?: string[];
   selectedItem?: string;
   selectedType?: ItemType;
 }
@@ -54,8 +57,6 @@ class TemplateEditor extends React.Component<PropsType, State> {
     const templates = templatesResponse.templates ? templatesResponse.templates : [];
     const handwrittenEmails = templatesResponse.handwritten_emails ? templatesResponse.handwritten_emails : [];
     const snippets = await fetchSnippets(emailAddress);
-
-    // debugger;
 
     this.setState({ handwrittenEmails, templates, snippets });
   }
@@ -103,15 +104,39 @@ class TemplateEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemApply = (text: string, trigger?: string) => {
+  private onSelectedItemApply = async (text: string, trigger?: string) => {
+    const { emailAddress } = this.props.match.params;
+
     this.onSelectedItemSave(text);
 
-    // TODO implement
-    console.log(`apply ${trigger}: ${text}`);
+    trigger = trigger === '' ? undefined : trigger;
+
+    const snippets = [{
+      trigger,
+      snippet: text,
+    }];
+
+    const result = await applySnippets(emailAddress, snippets);
+    const status = result.result[0].status;
   }
 
   private onSelectedItemRemove = () => {
-    // TODO Implement
+    const { selectedType, selectedItem, handwrittenEmails, snippets, templates } = this.state;
+
+    if (!selectedType || !selectedItem) {
+      return;
+    }
+
+    if (selectedType === 'handwrittenEmail' && handwrittenEmails) {
+      const updatedHandwrittenEmails = handwrittenEmails.slice().filter(s => s !== selectedItem);
+      this.setState({ handwrittenEmails: updatedHandwrittenEmails });
+    } else if (selectedType === 'snippet' && snippets) {
+      const updatedSnippets = snippets.slice().filter(s => s !== selectedItem);
+      this.setState({ snippets: updatedSnippets });
+    } else if (selectedType === 'template' && templates) {
+      const updatedTemplates = templates.slice().filter(s => s !== selectedItem);
+      this.setState({ templates: updatedTemplates });
+    }
   }
 
   public render() {

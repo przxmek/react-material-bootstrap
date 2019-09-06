@@ -32,7 +32,7 @@ type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
   text: string;
-  trigger?: string;
+  trigger: string;
 }
 
 class RichTextEditor extends React.Component<PropsType, State> {
@@ -64,7 +64,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
 
     this.state = {
       text: props.text,
-      trigger: undefined,
+      trigger: '',
     };
   }
 
@@ -109,7 +109,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
         />
         <Grid container spacing={1}>
           <Grid item>
-            <Button variant="outlined" onClick={onRemove} disabled>
+            <Button variant="outlined" onClick={onRemove}>
               <DeleteIcon className={classes.iconLeft} />
               Remove
             </Button>

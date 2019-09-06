@@ -1,10 +1,21 @@
-export type HandwrittenEmail = string;
-export type Template = string;
-export type Snippet = string;
-
-export interface GenerateTemplatesResponse {
-    handwritten_emails?: HandwrittenEmail[];
-    templates?: Template[];
+export interface TemplatesResponse {
+  handwritten_emails?: string[];
+  templates?: string[];
 }
 
-export type GenerateSnippetsResponse = Snippet[];
+export type SnippetsResponse = string[];
+
+
+export interface Snippet {
+  trigger?: string;
+  snippet: string;
+  score?: number;
+}
+
+export interface ApplyResponse {
+  result: ApplyResponseItem[];
+}
+
+export interface ApplyResponseItem extends Snippet {
+  status: string;
+}

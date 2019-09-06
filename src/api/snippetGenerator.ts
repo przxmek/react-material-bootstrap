@@ -4,8 +4,10 @@ import {
   SNIPPET_GENERATOR_PASS
 } from "config";
 import {
-  GenerateTemplatesResponse as TemplatesResponse,
-  GenerateSnippetsResponse as SnippetsResponse
+  TemplatesResponse,
+  SnippetsResponse,
+  Snippet,
+  ApplyResponse
 } from "models/snippetGenerator";
 
 const URL = SNIPPET_GENERATOR_URL;
@@ -14,7 +16,9 @@ const AuthHeader = `Basic ${btoa(`${SNIPPET_GENERATOR_USER}:${SNIPPET_GENERATOR_
 export type SnippetType = "templates" | "snippets";
 
 
-export async function fetchTemplates(emailAddress: string): Promise<TemplatesResponse> {
+export async function fetchTemplates(
+  emailAddress: string
+): Promise<TemplatesResponse> {
   const response = await fetchSnippetsInternal(emailAddress, "templates");
 
   // Flatten templates array madness
@@ -23,7 +27,9 @@ export async function fetchTemplates(emailAddress: string): Promise<TemplatesRes
   return response;
 }
 
-export async function fetchSnippets(emailAddress: string): Promise<SnippetsResponse> {
+export async function fetchSnippets(
+  emailAddress: string
+): Promise<SnippetsResponse> {
   const response = await fetchSnippetsInternal(emailAddress, "snippets");
 
   // Convert snippet objects into simple strings
@@ -32,12 +38,24 @@ export async function fetchSnippets(emailAddress: string): Promise<SnippetsRespo
   return snippets;
 }
 
-export async function generateTemplates(emailAddress: string): Promise<TemplatesResponse> {
+export async function generateTemplates(
+  emailAddress: string
+): Promise<TemplatesResponse> {
   return await generateSnippetsInternal(emailAddress, "templates");
 }
 
-export async function generateSnippets(emailAddress: string): Promise<SnippetsResponse> {
+export async function generateSnippets(
+  emailAddress: string
+): Promise<SnippetsResponse> {
   return await generateSnippetsInternal(emailAddress, "snippets");
+}
+
+export async function applySnippets(
+  emailAddress: string,
+  snippets: Snippet[],
+  sendEmail?: boolean
+): Promise<ApplyResponse> {
+  return await applySnippetsInternal(emailAddress, snippets, sendEmail);
 }
 
 async function fetchSnippetsInternal(
@@ -68,6 +86,27 @@ async function generateSnippetsInternal(
     {
       method: 'POST',
       headers: {
+        Authorization: AuthHeader
+      }
+    }
+  );
+
+  const json = await response.json();
+  return json;
+}
+
+async function applySnippetsInternal(
+  emailAddress: string,
+  snippets: Snippet[],
+  sendEmail: boolean = false
+): Promise<any> {
+  const response = await fetch(
+    `${URL}/snippets/${emailAddress}/apply/${sendEmail}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(snippets),
+      headers: {
+        "Content-Type": "application/json",
         Authorization: AuthHeader
       }
     }

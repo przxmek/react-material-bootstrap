@@ -3,7 +3,6 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
 
-import { Snippet, HandwrittenEmail, Template } from 'models/snippetGenerator';
 import { ItemType } from 'views/TemplateEditor/TemplateEditor';
 
 const styles = (theme: Theme) => createStyles({
@@ -29,9 +28,9 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  handwrittenEmails: HandwrittenEmail[];
-  snippets: Snippet[];
-  templates: Template[];
+  handwrittenEmails: string[];
+  snippets: string[];
+  templates: string[];
   onItemSelected: (item: string, type: ItemType) => void;
 }
 
