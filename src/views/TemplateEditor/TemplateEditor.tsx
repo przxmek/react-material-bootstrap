@@ -10,7 +10,7 @@ import {
   applySnippets
 } from 'api/snippetGenerator';
 import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
-import { Loading } from 'components';
+import { Loading, showAlert } from 'components';
 import { Snippet } from 'models/snippetGenerator';
 
 
@@ -64,16 +64,26 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
   private generateNewTemplates = async () => {
     const { emailAddress } = this.props.match.params;
+
+    showAlert("info", "Processing...", 5000);
+
     const templatesResponse = await generateTemplates(emailAddress);
     const templates = templatesResponse.templates;
     const handwrittenEmails = templatesResponse.handwritten_emails;
     this.setState({ handwrittenEmails, templates });
+
+    showAlert("success", "Templates generated", 5000);
   }
 
   private generateNewSnippets = async () => {
     const { emailAddress } = this.props.match.params;
+
+    showAlert("info", "Processing...", 5000);
+
     const snippets = await generateSnippets(emailAddress);
     this.setState({ snippets });
+
+    showAlert("success", "Snippets generated", 5000);
   }
 
   private onListItemSelected = (item: Snippet, type: ItemType) => {
@@ -87,10 +97,26 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     const all: Snippet[] = [...handwrittenEmails || [], ...snippets || [], ...templates || []];
 
+    showAlert("info", "Processing...", 5000);
 
     const result = await applySnippets(emailAddress, all);
-    const status = result.result[0].status;
+    const statusList = result.result.map(i => i.status);
+    const failed = statusList.filter(s => s !== 'added');
 
+
+    if (failed.length === 0) {
+      showAlert(
+        "success",
+        `${statusList.length} snippets added to Prometheus profile`,
+        5000
+      );
+    } else {
+      showAlert(
+        "error",
+        `${failed.length} snippets couldn't be saved: ${JSON.stringify(result)}`,
+        30000
+      );
+    }
   }
 
   private onSelectedItemSave = (snippet: Snippet, text: string, trigger: string) => {
@@ -134,8 +160,16 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     const snippets = [snippet];
 
+    showAlert("info", "Processing...", 5000);
+
     const result = await applySnippets(emailAddress, snippets);
     const status = result.result[0].status;
+
+    if (status === 'added') {
+      showAlert("success", "Snippet added to Prometheus profile", 5000);
+    } else {
+      showAlert("error", `Something went wrong: ${status}`, 30000);
+    }
   }
 
   private onSelectedItemRemove = (snippet: Snippet) => {
@@ -145,17 +179,29 @@ class TemplateEditor extends React.Component<PropsType, State> {
       return;
     }
 
-    const text = snippet.snippet;
+    const trigger = snippet.trigger;
 
     if (selectedType === 'handwrittenEmail' && handwrittenEmails) {
-      const updatedHandwrittenEmails = handwrittenEmails.slice().filter(s => s.snippet !== text);
-      this.setState({ handwrittenEmails: updatedHandwrittenEmails });
+      const updatedHandwrittenEmails = handwrittenEmails.slice().filter(s => s.trigger !== trigger);
+      this.setState({
+        handwrittenEmails: updatedHandwrittenEmails,
+        selectedItem: undefined,
+        selectedType: undefined
+      });
     } else if (selectedType === 'snippet' && snippets) {
-      const updatedSnippets = snippets.slice().filter(s => s.snippet !== text);
-      this.setState({ snippets: updatedSnippets });
+      const updatedSnippets = snippets.slice().filter(s => s.trigger !== trigger);
+      this.setState({
+        snippets: updatedSnippets,
+        selectedItem: undefined,
+        selectedType: undefined
+      });
     } else if (selectedType === 'template' && templates) {
-      const updatedTemplates = templates.slice().filter(s => s.snippet !== text);
-      this.setState({ templates: updatedTemplates });
+      const updatedTemplates = templates.slice().filter(s => s.trigger !== trigger);
+      this.setState({
+        templates: updatedTemplates,
+        selectedItem: undefined,
+        selectedType: undefined
+      });
     }
   }
 
