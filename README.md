@@ -1,6 +1,6 @@
-# [Point Admin Dashboard](https://admin.pointapi.com)
+# admin-dashboard-frontend
 
-[![React Material Dashboard](https://s3.eu-west-2.amazonaws.com/devias/products/react-material-dashboard/react-material-free-xl.jpg)](https://react-material-dashboard.devias.io/dashboard)
+[![Build Status](https://travis-ci.com/PointMail/admin-dashboard-frontend.svg?token=FAG8qk4up1vsYvZUA2xw&branch=master)](https://travis-ci.com/PointMail/admin-dashboard-frontend)
 
 ## Quick start
 
