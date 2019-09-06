@@ -78,7 +78,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
     this.setState({ selectedType: type, selectedItem: item });
   }
 
-  private onSelectedItemTextChange = (text: string) => {
+  private onSelectedItemSave = (text: string) => {
     const { selectedType, selectedItem } = this.state;
 
     if (!selectedType || !selectedItem) {
@@ -101,6 +101,17 @@ class TemplateEditor extends React.Component<PropsType, State> {
       templates[idx] = text;
       this.setState({ templates, selectedItem: text });
     }
+  }
+
+  private onSelectedItemApply = (text: string, trigger?: string) => {
+    this.onSelectedItemSave(text);
+
+    // TODO implement
+    console.log(`apply ${trigger}: ${text}`);
+  }
+
+  private onSelectedItemRemove = () => {
+    // TODO Implement
   }
 
   public render() {
@@ -133,7 +144,12 @@ class TemplateEditor extends React.Component<PropsType, State> {
             <Typography>Select an item from the list first.</Typography>
           )}
           {selectedItem && (
-            <RichTextEditor text={selectedItem} onTextChange={this.onSelectedItemTextChange} />
+            <RichTextEditor
+              text={selectedItem}
+              onApply={this.onSelectedItemApply}
+              onRemove={this.onSelectedItemRemove}
+              onSave={this.onSelectedItemSave}
+            />
           )}
 
         </Box>

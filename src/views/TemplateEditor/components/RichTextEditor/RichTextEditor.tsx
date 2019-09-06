@@ -1,14 +1,13 @@
-import { Theme, Button, TextField } from '@material-ui/core';
+import { Theme, Button, TextField, Grid } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
+import DeleteIcon from '@material-ui/icons/DeleteOutlined';
 import * as ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 const styles = (theme: Theme) => createStyles({
   root: {
     backgroundColor: theme.palette.common.white,
-    display: 'flex',
-    flexDirection: 'column',
     height: '100%',
     padding: theme.spacing(2),
   },
@@ -16,18 +15,24 @@ const styles = (theme: Theme) => createStyles({
     height: 600,
     marginTop: 16,
     paddingBottom: 48,
-  }
+  },
+  iconLeft: {
+    marginRight: theme.spacing(1),
+  },
 });
 
 interface Props {
   text: string;
-  onTextChange: (text: string) => void;
+  onApply: (text: string, trigger?: string) => void;
+  onRemove: () => void;
+  onSave: (text: string) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
   text: string;
+  trigger?: string;
 }
 
 class RichTextEditor extends React.Component<PropsType, State> {
@@ -59,6 +64,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
 
     this.state = {
       text: props.text,
+      trigger: undefined,
     };
   }
 
@@ -73,16 +79,13 @@ class RichTextEditor extends React.Component<PropsType, State> {
     this.setState({ text });
   }
 
-  private onSave = () => {
-    const { onTextChange } = this.props;
-    const { text } = this.state;
-
-    onTextChange(text);
+  private onTriggerChange = (trigger: string) => {
+    this.setState({ trigger });
   }
 
   public render() {
-    const { classes } = this.props;
-    const { text } = this.state;
+    const { classes, onApply, onRemove, onSave } = this.props;
+    const { text, trigger } = this.state;
 
     return (
       <div className={classes.root}>
@@ -91,6 +94,8 @@ class RichTextEditor extends React.Component<PropsType, State> {
           helperText="A trigger for this snippet."
           margin="normal"
           variant="outlined"
+          value={trigger}
+          onChange={e => this.onTriggerChange(e.target.value)}
           InputLabelProps={{
             shrink: true,
           }}
@@ -102,9 +107,25 @@ class RichTextEditor extends React.Component<PropsType, State> {
           formats={this.formats}
           className={classes.editor}
         />
-        <Button variant="contained" color="primary" onClick={this.onSave}>
-          Save
-        </Button>
+        <Grid container spacing={1}>
+          <Grid item>
+            <Button variant="outlined" onClick={onRemove} disabled>
+              <DeleteIcon className={classes.iconLeft} />
+              Remove
+            </Button>
+          </Grid>
+          <Grid item xs></Grid>
+          <Grid item>
+            <Button variant="outlined" onClick={() => onSave(text)}>
+              Save edits
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button variant="contained" color="primary" onClick={() => onApply(text, trigger)}>
+              Apply to profile
+            </Button>
+          </Grid>
+        </Grid>
       </div>
     );
   }
