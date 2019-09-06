@@ -7,7 +7,7 @@ import User from 'models/user';
 import { fetchUsers, putUser } from 'api/users';
 import { fetchMailjetContacts } from 'api/mailjet';
 import Contact from 'models/mailjet/contact';
-import { Loading } from 'components';
+import { Loading, showAlert } from 'components';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -77,9 +77,13 @@ class UserList extends React.Component<PropsType, State> {
   private activateUser = async (user: User) => {
     user.active = true;
 
+    showAlert("info", `Processing...`, 5000);
+
     await putUser(user);
 
     await this.reloadUsers();
+    
+    showAlert("success", `User ${user.email_address} activated.`, 5000);
   }
 
   private onChangeSelectedUsers = (selectedUsers: string[]) => {
@@ -89,8 +93,13 @@ class UserList extends React.Component<PropsType, State> {
   private onBulkUsersActivate = async () => {
     const { users, selectedUsers } = this.state;
     const promises: Array<Promise<any>> = [];
-
+    
     if (!users) {
+      return;
+    }
+
+    if (!selectedUsers.length) {
+      showAlert("warning", "No users selected.", 5000);
       return;
     }
 
@@ -103,8 +112,12 @@ class UserList extends React.Component<PropsType, State> {
       }
     });
 
+    showAlert("info", "Processing...", 5000);
+    
     await Promise.all(promises);
     await this.reloadUsers();
+
+    showAlert("success", `${selectedUsers.length} users activated!`, 5000);
   }
 
   public render() {

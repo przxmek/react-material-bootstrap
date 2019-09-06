@@ -27,6 +27,7 @@ import User from 'models/user';
 import { RouteComponentProps, withRouter } from 'react-router';
 import Contact from 'models/mailjet/contact';
 import { changeContactStage } from 'api/mailjet';
+import { showAlert } from 'components';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -65,7 +66,7 @@ interface Props {
   className?: string;
   contacts: Contact[];
   onChangeSelectedUsers: (users: string[]) => void;
-  onMailjetUpdate: () => void;
+  onMailjetUpdate: () => Promise<void>;
   onUserActivate: (user: User) => void;
   searchText: string;
   users: User[];
@@ -219,9 +220,13 @@ class UsersTable extends React.Component<PropsType, State> {
   private changeMailjetStage = async (emailAddress: string, stage: string) => {
     const { onMailjetUpdate } = this.props;
 
+    showAlert("info", "Processing...", 5000);
+    
     await changeContactStage(emailAddress, stage);
 
-    onMailjetUpdate();
+    await onMailjetUpdate();
+
+    showAlert("success", "Mailjet stage changed.", 5000);
   }
 
   /**

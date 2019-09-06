@@ -48,7 +48,15 @@ class UsersToolbar extends React.Component<PropsType, State> {
         <div className={classes.row}>
           <span className={classes.spacer} />
 
-          <Button className={classes.marginRight}>Import</Button>
+          <Tooltip title="Add new (inactive) user">
+            <Button
+              variant="contained"
+              className={classes.marginRight}
+              disabled
+            >
+              Add user
+            </Button>
+          </Tooltip>
 
           <Tooltip title="Activate selected users">
             <Button
@@ -57,14 +65,6 @@ class UsersToolbar extends React.Component<PropsType, State> {
               onClick={onBulkUsersActivate}
             >
               Activate
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Add new (inactive) user">
-            <Button
-              variant="contained"
-              className={classes.marginRight}>
-              Add user
             </Button>
           </Tooltip>
 
