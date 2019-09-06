@@ -7,6 +7,7 @@ import User from 'models/user';
 import { fetchUsers, putUser } from 'api/users';
 import { fetchMailjetContacts } from 'api/mailjet';
 import Contact from 'models/mailjet/contact';
+import { Loading } from 'components';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -20,10 +21,10 @@ const styles = (theme: Theme) => createStyles({
 type PropsType = WithStyles<typeof styles>;
 
 interface State {
-  contacts: Contact[];
+  contacts?: Contact[];
   searchText: string;
   selectedUsers: string[];
-  users: User[];
+  users?: User[];
 }
 
 class UserList extends React.Component<PropsType, State> {
@@ -32,10 +33,10 @@ class UserList extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      contacts: [],
+      contacts: undefined,
       searchText: '',
       selectedUsers: [],
-      users: [],
+      users: undefined,
     };
   }
 
@@ -89,6 +90,10 @@ class UserList extends React.Component<PropsType, State> {
     const { users, selectedUsers } = this.state;
     const promises: Array<Promise<any>> = [];
 
+    if (!users) {
+      return;
+    }
+
     selectedUsers.forEach(async (userId) => {
       const usersFilter = users.filter(u => u.id === userId);
       if (usersFilter.length > 0 && !usersFilter[0].active) {
@@ -105,6 +110,10 @@ class UserList extends React.Component<PropsType, State> {
   public render() {
     const { classes } = this.props;
     const { contacts, searchText, users } = this.state;
+
+    if (!users || !contacts) {
+      return (<Loading />);
+    }
 
     return (
       <div className={classes.root}>

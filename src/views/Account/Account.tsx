@@ -8,6 +8,7 @@ import { fetchUser } from 'api/users';
 import User from 'models/user';
 import Contact from 'models/mailjet/contact';
 import { fetchMailjetContact } from 'api/mailjet';
+import { Loading } from 'components';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -51,19 +52,17 @@ class Account extends React.Component<PropsType, State> {
     const { account, contact } = this.state;
 
     if (!account || !contact) {
-      return (
-        <h1>Loading..</h1>
-      );
+      return (<Loading />);
     }
 
     return (
       <div className={classes.root}>
         <Grid container spacing={4}>
           <Grid item lg={4} md={6} xl={4} xs={12}>
-            <AccountProfile account={account}/>
+            <AccountProfile account={account} />
           </Grid>
           <Grid item lg={8} md={6} xl={8} xs={12}>
-            <AccountDetails account={account} contact={contact}  />
+            <AccountDetails account={account} contact={contact} />
           </Grid>
         </Grid>
       </div>

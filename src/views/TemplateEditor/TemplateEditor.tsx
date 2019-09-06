@@ -7,6 +7,7 @@ import { fetchSnippets, fetchTemplates, generateSnippets, generateTemplates } fr
 import { HandwrittenEmail, Snippet, Template } from 'models/snippetGenerator';
 
 import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
+import { Loading } from 'components';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -107,9 +108,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
     const { handwrittenEmails, snippets, templates, selectedItem } = this.state;
 
     if (!handwrittenEmails || !snippets || !templates) {
-      return (
-        <h1>Loading..</h1>
-      );
+      return (<Loading />);
     }
 
     return (
