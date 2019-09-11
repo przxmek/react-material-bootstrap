@@ -1,10 +1,17 @@
 export interface TemplatesResponse {
   handwritten_emails?: Snippet[];
   templates?: Snippet[];
+
+  result?: "failure";
+  message?: string;
 }
 
-export type SnippetsResponse = Snippet[];
-
+export interface SnippetsResponse {
+  snippets?: Snippet[];
+  
+  result?: "failure";
+  message?: string;
+}
 
 export interface Snippet {
   trigger: string;
