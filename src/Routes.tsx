@@ -1,24 +1,23 @@
 import React from 'react';
-import { Switch, Redirect } from 'react-router-dom';
-
+import { Redirect, Switch } from 'react-router-dom';
 import { RouteWithLayout } from './components';
 import {
   Main as MainLayout,
   Minimal as MinimalLayout
 } from './layouts';
-
 import {
-  Dashboard as DashboardView,
-  ProductList as ProductListView,
-  UserList as UserListView,
-  Typography as TypographyView,
-  Icons as IconsView,
   Account as AccountView,
-  Settings as SettingsView,
-  SignUp as SignUpView,
-  SignIn as SignInView,
+  Dashboard as DashboardView,
+  Icons as IconsView,
   NotFound as NotFoundView,
+  ProductList as ProductListView,
+  Prometheus as PrometheusView,
+  Settings as SettingsView,
+  SignIn as SignInView,
+  SignUp as SignUpView,
   TemplateEditor as TemplateEditorView,
+  Typography as TypographyView,
+  UserList as UserListView
 } from './views';
 
 const Routes = () => {
@@ -30,28 +29,16 @@ const Routes = () => {
         to="/users"
       />
       <RouteWithLayout
+        component={AccountView}
+        exact
+        layout={MainLayout}
+        path="/account/:emailAddress"
+      />
+      <RouteWithLayout
         component={DashboardView}
         exact
         layout={MainLayout}
         path="/dashboard"
-      />
-      <RouteWithLayout
-        component={UserListView}
-        exact
-        layout={MainLayout}
-        path="/users"
-      />
-      <RouteWithLayout
-        component={ProductListView}
-        exact
-        layout={MainLayout}
-        path="/products"
-      />
-      <RouteWithLayout
-        component={TypographyView}
-        exact
-        layout={MainLayout}
-        path="/typography"
       />
       <RouteWithLayout
         component={IconsView}
@@ -60,10 +47,22 @@ const Routes = () => {
         path="/icons"
       />
       <RouteWithLayout
-        component={AccountView}
+        component={ProductListView}
         exact
         layout={MainLayout}
-        path="/account/:emailAddress"
+        path="/products"
+      />
+      <RouteWithLayout
+        component={PrometheusView}
+        exact
+        layout={MainLayout}
+        path="/prometheus/:emailAddress"
+      />
+      <RouteWithLayout
+        component={TypographyView}
+        exact
+        layout={MainLayout}
+        path="/typography"
       />
       <RouteWithLayout
         component={SettingsView}
@@ -72,10 +71,10 @@ const Routes = () => {
         path="/settings"
       />
       <RouteWithLayout
-        component={TemplateEditorView}
+        component={SignInView}
         exact
-        layout={MainLayout}
-        path="/template-editor/:emailAddress"
+        layout={MinimalLayout}
+        path="/sign-in"
       />
       <RouteWithLayout
         component={SignUpView}
@@ -84,10 +83,16 @@ const Routes = () => {
         path="/sign-up"
       />
       <RouteWithLayout
-        component={SignInView}
+        component={TemplateEditorView}
         exact
-        layout={MinimalLayout}
-        path="/sign-in"
+        layout={MainLayout}
+        path="/template-editor/:emailAddress"
+      />
+      <RouteWithLayout
+        component={UserListView}
+        exact
+        layout={MainLayout}
+        path="/users"
       />
       <RouteWithLayout
         component={NotFoundView}

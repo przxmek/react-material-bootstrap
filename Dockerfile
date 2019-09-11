@@ -16,8 +16,9 @@ RUN npm install react-scripts@^3.1.1 -g --silent
 
 # Build admin-dashboard-frontend
 COPY . /app
-RUN npm run build
-
+ARG REACT_APP_ENV=prod
+RUN echo "REACT_APP_ENV=${REACT_APP_ENV}"
+RUN REACT_APP_ENV=${REACT_APP_ENV} npm run build
 
 ######################
 #  Production image  #
