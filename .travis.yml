@@ -22,21 +22,32 @@ jobs:
         # - npm test
         - npm run build
     - stage: docker
+      if: branch IN (master)
       script:
         - echo "Travis branch $TRAVIS_BRANCH | commit $TRAVIS_COMMIT"
-        - export BRANCH_TAG=`echo $TRAVIS_BRANCH | tr / _`
 
         - echo "Building ${IMAGE_NAME} docker image.."
-        - docker build -t ${IMAGE_NAME}:latest --build-arg REACT_APP_ENV=${BRANCH_TAG} .
+        - docker build -t ${IMAGE_NAME}:latest --build-arg REACT_APP_ENV=prod .
 
         - echo "Pushing ${IMAGE_NAME} docker image to ECR.."
-        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
-        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$BRANCH_TAG
         - $(aws ecr get-login --no-include-email --region us-west-2)
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:master
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:master
         - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
-        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$BRANCH_TAG
-        - |
-          if [ "$TRAVIS_BRANCH" == "master" ]; then
-            docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
-            docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
-          fi
+    - stage: docker
+      if: branch IN (dev)
+      script:
+        - echo "Travis branch $TRAVIS_BRANCH | commit $TRAVIS_COMMIT"
+
+        - echo "Building ${IMAGE_NAME} docker image.."
+        - docker build -t ${IMAGE_NAME}:latest --build-arg REACT_APP_ENV=dev .
+
+        - echo "Pushing ${IMAGE_NAME} docker image to ECR.."
+        - $(aws ecr get-login --no-include-email --region us-west-2)
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:dev
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:dev
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
