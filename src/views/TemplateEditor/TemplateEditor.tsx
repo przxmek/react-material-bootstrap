@@ -57,7 +57,15 @@ class TemplateEditor extends React.Component<PropsType, State> {
     const templatesResponse = await fetchTemplates(emailAddress);
     const templates = templatesResponse.templates ? templatesResponse.templates : [];
     const handwrittenEmails = templatesResponse.handwritten_emails ? templatesResponse.handwritten_emails : [];
-    const snippets = await fetchSnippets(emailAddress);
+    const snippetsResponse = await fetchSnippets(emailAddress);
+    const snippets = snippetsResponse.snippets ? snippetsResponse.snippets : [];
+
+    if (templatesResponse.result === "failure") {
+      showAlert("error", `Failed to fetch templates: ${templatesResponse.message}`, 10000);
+    }
+    if (snippetsResponse.result === "failure") {
+      showAlert("error", `Failed to fetch snippets: ${snippetsResponse.message}`, 10000);
+    }
 
     this.setState({ handwrittenEmails, templates, snippets });
   }
@@ -80,7 +88,8 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     showAlert("info", "Processing...", 5000);
 
-    const snippets = await generateSnippets(emailAddress);
+    const snippetsResponse = await generateSnippets(emailAddress);
+    const snippets = snippetsResponse.snippets ? snippetsResponse.snippets : [];
     this.setState({ snippets });
 
     showAlert("success", "Snippets generated", 5000);

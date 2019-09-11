@@ -27,7 +27,11 @@ export async function fetchSnippets(
   emailAddress: string
 ): Promise<SnippetsResponse> {
   const response = await fetchSnippetsInternal(emailAddress, "snippets");
-  return processSnippetsResponse(response);
+  if (response.result !== 'failure') {
+    return processSnippetsResponse(response);
+  } else {
+    return response;
+  }
 }
 
 export async function generateTemplates(
@@ -119,18 +123,27 @@ function wrapIntoObject(snippet: string, trigger: string = '', score?: number): 
 }
 
 function processTemplatesResponse(response: any) {
-  // Flatten templates array madness
-  response.templates = [].concat(...response.templates);
+  if (response.templates) {
+    // Flatten templates array madness
+    response.templates = [].concat(...response.templates);
 
-  // Convert strings into Snippet objects
-  response.templates = response.templates.map(
-    (s: string, idx: number) =>
-      wrapIntoObject(s, `template-${idx + 1}`)
-  );
-  response.handwritten_emails = response.handwritten_emails.map(
-    (s: string, idx: number) =>
-      wrapIntoObject(s, `handwritten-email-${idx + 1}`)
-  );
+    // Convert strings into Snippet objects
+    response.templates = response.templates.map(
+      (s: string, idx: number) =>
+        wrapIntoObject(s, `template-${idx + 1}`)
+    );
+  } else {
+    response.templates = [];
+  }
+
+  if (response.handwritten_emails) {
+    response.handwritten_emails = response.handwritten_emails.map(
+      (s: string, idx: number) =>
+        wrapIntoObject(s, `handwritten-email-${idx + 1}`)
+    );
+  } else {
+    response.handwritten_emails = [];
+  }
 
   return response;
 }
@@ -141,6 +154,8 @@ function processSnippetsResponse(response: any) {
     (s: { snippet: string }, idx: number) =>
       wrapIntoObject(s.snippet, `snippet-${idx + 1}`)
   );
-
-  return response;
+  
+  return {
+    snippets: response,
+  };
 }
