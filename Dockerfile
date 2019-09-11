@@ -25,5 +25,9 @@ RUN REACT_APP_ENV=${REACT_APP_ENV} npm run build
 ######################
 FROM nginx:1.17-alpine
 
+
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Use build from docker build stage
 COPY --from=build /app/build /usr/share/nginx/html
