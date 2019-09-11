@@ -13,7 +13,7 @@ const dev = {
 };
 
 const local = {
-  API_URL: "http://localhost:5000/api",
+  API_URL: "https://admin-dev.pointapi.com/api",
   SNIPPET_GENERATOR_URL: "https://dev-snippet-generator.pointapi.com/",
   SNIPPET_GENERATOR_USER: "point",
   SNIPPET_GENERATOR_PASS: "scoobyDoo123$",

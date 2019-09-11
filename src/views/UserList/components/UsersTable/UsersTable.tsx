@@ -64,7 +64,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  contacts: Contact[];
+  contacts?: Contact[];
   onChangeSelectedUsers: (users: string[]) => void;
   onMailjetUpdate: () => Promise<void>;
   onUserActivate: (user: User) => void;
@@ -200,6 +200,10 @@ class UsersTable extends React.Component<PropsType, State> {
 
   private getContact = (emailAddress: string): Contact | undefined => {
     const { contacts } = this.props;
+    if (!contacts) {
+      return undefined;
+    }
+
     const filtered = contacts.filter(c => c.Email === emailAddress);
     if (filtered.length > 0) {
       return filtered[0];
@@ -221,7 +225,7 @@ class UsersTable extends React.Component<PropsType, State> {
     const { onMailjetUpdate } = this.props;
 
     showAlert("info", "Processing...", 5000);
-    
+
     await changeContactStage(emailAddress, stage);
 
     await onMailjetUpdate();
@@ -260,6 +264,10 @@ class UsersTable extends React.Component<PropsType, State> {
       onboarding_scheduled: [],
       no_scheduled_meeting: [],
     };
+
+    if (!this.props.contacts) {
+      return;
+    }
 
     const contact = this.getContact(emailAddress);
     if (!contact) {
