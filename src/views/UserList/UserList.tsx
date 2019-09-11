@@ -41,8 +41,8 @@ class UserList extends React.Component<PropsType, State> {
   }
 
   public componentDidMount = async () => {
-    await this.reloadMailjetContacts();
-    await this.reloadUsers();
+    this.reloadMailjetContacts();
+    this.reloadUsers();
   }
 
   private reloadUsers = async () => {
@@ -124,7 +124,7 @@ class UserList extends React.Component<PropsType, State> {
     const { classes } = this.props;
     const { contacts, searchText, users } = this.state;
 
-    if (!users || !contacts) {
+    if (!users) {
       return (<Loading />);
     }
 
