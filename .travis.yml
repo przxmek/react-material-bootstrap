@@ -23,10 +23,13 @@ jobs:
         - npm run build
     - stage: docker
       script:
-        - docker build -t ${IMAGE_NAME}:latest .
-        - echo "Pushing ${IMAGE_NAME} docker image to ECR.."
         - echo "Travis branch $TRAVIS_BRANCH | commit $TRAVIS_COMMIT"
         - export BRANCH_TAG=`echo $TRAVIS_BRANCH | tr / _`
+
+        - echo "Building ${IMAGE_NAME} docker image.."
+        - docker build -t ${IMAGE_NAME}:latest --build-arg REACT_APP_ENV=${BRANCH_TAG} .
+
+        - echo "Pushing ${IMAGE_NAME} docker image to ECR.."
         - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
         - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$BRANCH_TAG
         - $(aws ecr get-login --no-include-email --region us-west-2)
