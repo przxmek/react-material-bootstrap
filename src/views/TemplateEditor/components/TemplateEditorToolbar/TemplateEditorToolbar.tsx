@@ -2,7 +2,7 @@ import { Button, Theme, Tooltip } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
-import { SNIPPET_GENERATOR_URL } from 'config';
+import { SNIPPET_GENERATOR_URL, SNIPPET_GENERATOR_PASS, SNIPPET_GENERATOR_USER } from 'config';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -50,7 +50,8 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
 
     for (const type of files) {
       const url = `${SNIPPET_GENERATOR_URL}/snippets/${emailAddress}/${type}?csv`;
-      window.open(url);
+      const authUrl = url.replace("://", `://${SNIPPET_GENERATOR_USER}:${SNIPPET_GENERATOR_PASS}@`);
+      window.open(authUrl);
     }
   }
 
