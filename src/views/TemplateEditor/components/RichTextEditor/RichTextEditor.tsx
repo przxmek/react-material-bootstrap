@@ -4,7 +4,7 @@ import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteOutlined';
 import * as ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Snippet } from 'models/snippetGenerator';
+import { Template } from 'models/snippetGenerator';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -23,10 +23,10 @@ const styles = (theme: Theme) => createStyles({
 });
 
 interface Props {
-  snippet: Snippet;
-  onApply: (snippet: Snippet, newText: string, newTrigger: string) => void;
-  onRemove: (snippet: Snippet) => void;
-  onSave: (snippet: Snippet, newText: string, newTrigger: string) => void;
+  snippet: Template;
+  onApply: (snippet: Template, newText: string, newTrigger: string) => void;
+  onRemove: (snippet: Template) => void;
+  onSave: (snippet: Template, newText: string, newTrigger: string) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;

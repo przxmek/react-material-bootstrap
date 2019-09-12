@@ -24,8 +24,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  onApplyAll: () => void;
-  onGenerateSnippets: () => void;
+  onApplyAll?: () => void;
   onGenerateTemplates: () => void;
 }
 
@@ -41,7 +40,6 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
       classes,
       className,
       onApplyAll,
-      onGenerateSnippets,
       onGenerateTemplates
     } = this.props;
 
@@ -49,16 +47,6 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
       <div className={clsx(classes.root, className)}>
         <div className={classes.row}>
           <span className={classes.spacer} />
-
-          <Tooltip title="Generate templates using snippet-generator">
-            <Button
-              variant="contained"
-              className={classes.marginRight}
-              onClick={onGenerateSnippets}
-            >
-              Generate snippets
-            </Button>
-          </Tooltip>
 
           <Tooltip title="Generate templates using snippet-generator">
             <Button
@@ -76,6 +64,7 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
               color="primary"
               className={classes.marginRight}
               onClick={onApplyAll}
+              disabled={!onApplyAll}
             >
               Apply all
             </Button>
