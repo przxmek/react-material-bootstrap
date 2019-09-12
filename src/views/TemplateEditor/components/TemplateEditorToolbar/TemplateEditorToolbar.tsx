@@ -2,6 +2,7 @@ import { Button, Theme, Tooltip } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
+import { SNIPPET_GENERATOR_URL } from 'config';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -24,6 +25,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
+  emailAddress: string;
   onApplyAll?: () => void;
   onGenerateTemplates: () => void;
 }
@@ -34,6 +36,27 @@ interface State {
 }
 
 class TemplateEditorToolbar extends React.Component<PropsType, State> {
+
+  private downloadCSVs = async () => {
+    const { emailAddress } = this.props;
+
+    const files = [
+      "templates",
+      "templates_with_vars",
+      "potential_templates",
+      "potential_templates_with_vars",
+      "paragraph_snippets"
+    ];
+
+    for (const type of files) {
+      const url = `${SNIPPET_GENERATOR_URL}/snippets/${emailAddress}/${type}?csv`;
+      window.open(url);
+    }
+  }
+
+  private delay = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   public render() {
     const {
@@ -55,6 +78,16 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
               onClick={onGenerateTemplates}
             >
               Generate templates
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Download CSV files">
+            <Button
+              variant="contained"
+              className={classes.marginRight}
+              onClick={this.downloadCSVs}
+            >
+              Download CSV files
             </Button>
           </Tooltip>
 

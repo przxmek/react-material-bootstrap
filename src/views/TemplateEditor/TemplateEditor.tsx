@@ -232,6 +232,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
   }
 
   public render() {
+    const { emailAddress } = this.props.match.params;
     const { classes } = this.props;
     const {
       templates,
@@ -250,6 +251,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
     return (
       <div className={classes.root}>
         <TemplateEditorToolbar
+          emailAddress={emailAddress}
           // onApplyAll={this.applyAllSnippets}
           onGenerateTemplates={this.generateNewTemplates}
         />

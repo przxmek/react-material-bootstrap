@@ -65,8 +65,12 @@ async function fetchTemplatesInternal(
     }
   );
 
-  const json = await response.json();
-  return json;
+  if (!csv) {
+    const json = await response.json();
+    return json;
+  } else {
+    return response;
+  }
 }
 
 async function generateTemplatesInternal(emailAddress: string): Promise<any> {
