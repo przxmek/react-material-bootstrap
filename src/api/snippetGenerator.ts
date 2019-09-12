@@ -159,44 +159,6 @@ function processSnippets(data: any[][], name: string): Template[] {
   );
 }
 
-function processTemplatesResponse(response: any) {
-  if (response.templates) {
-    // Flatten templates array madness
-    response.templates = [].concat(...response.templates);
-
-    // Convert strings into Snippet objects
-    response.templates = response.templates.map(
-      (s: string, idx: number) =>
-        wrapIntoObject(s, `template-${idx + 1}`)
-    );
-  } else {
-    response.templates = [];
-  }
-
-  if (response.handwritten_emails) {
-    response.handwritten_emails = response.handwritten_emails.map(
-      (s: string, idx: number) =>
-        wrapIntoObject(s, `handwritten-email-${idx + 1}`)
-    );
-  } else {
-    response.handwritten_emails = [];
-  }
-
-  return response;
-}
-
-function processSnippetsResponse(response: any) {
-  // Convert snippet objects into Snippet objects
-  response = response.map(
-    (s: { snippet: string }, idx: number) =>
-      wrapIntoObject(s.snippet, `snippet-${idx + 1}`)
-  );
-
-  return {
-    snippets: response,
-  };
-}
-
 function wrapIntoObject(snippet: string, trigger: string = '', score?: number): Template {
   return {
     trigger,
