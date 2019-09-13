@@ -3,15 +3,14 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import {
-  fetchSnippets,
   fetchTemplates,
-  generateSnippets,
+  applySnippets,
   generateTemplates,
-  applySnippets
+  TemplateType
 } from 'api/snippetGenerator';
 import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
 import { Loading, showAlert } from 'components';
-import { Snippet } from 'models/snippetGenerator';
+import { Template, TemplatesResponse } from 'models/snippetGenerator';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -29,13 +28,15 @@ interface PathParamsType {
 
 type PropsType = WithStyles<typeof styles> & RouteComponentProps<PathParamsType>;
 
-export type ItemType = 'snippet' | 'template' | 'handwrittenEmail';
 interface State {
-  handwrittenEmails?: Snippet[];
-  snippets?: Snippet[];
-  templates?: Snippet[];
-  selectedItem?: Snippet;
-  selectedType?: ItemType;
+  templates?: Template[];
+  templatesWithVars?: Template[];
+  potentialTemplates?: Template[];
+  potentialTemplatesWithVars?: Template[];
+  paragraphSnippets?: Template[];
+  selectedItem?: Template;
+  selectedType?: TemplateType;
+  loaded: boolean;
 }
 
 class TemplateEditor extends React.Component<PropsType, State> {
@@ -43,31 +44,28 @@ class TemplateEditor extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      handwrittenEmails: undefined,
-      snippets: undefined,
       templates: undefined,
+      templatesWithVars: undefined,
+      potentialTemplates: undefined,
+      potentialTemplatesWithVars: undefined,
+      paragraphSnippets: undefined,
       selectedItem: undefined,
-      selectedType: undefined
+      selectedType: undefined,
+      loaded: false
     };
   }
 
   public componentDidMount = async () => {
     const { emailAddress } = this.props.match.params;
 
-    const templatesResponse = await fetchTemplates(emailAddress);
-    const templates = templatesResponse.templates ? templatesResponse.templates : [];
-    const handwrittenEmails = templatesResponse.handwritten_emails ? templatesResponse.handwritten_emails : [];
-    const snippetsResponse = await fetchSnippets(emailAddress);
-    const snippets = snippetsResponse.snippets ? snippetsResponse.snippets : [];
+    const response = await fetchTemplates(emailAddress);
 
-    if (templatesResponse.result === "failure") {
-      showAlert("error", `Failed to fetch templates: ${templatesResponse.message}`, 10000);
-    }
-    if (snippetsResponse.result === "failure") {
-      showAlert("error", `Failed to fetch snippets: ${snippetsResponse.message}`, 10000);
+    if (response.result === "failure") {
+      this.setState({ loaded: true });
+      showAlert("error", `Failed to fetch templates: ${response.message}`, 10000);
     }
 
-    this.setState({ handwrittenEmails, templates, snippets });
+    this.applyTemplatesResponse(response);
   }
 
   private generateNewTemplates = async () => {
@@ -75,36 +73,47 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     showAlert("info", "Processing...", 5000);
 
-    const templatesResponse = await generateTemplates(emailAddress);
-    const templates = templatesResponse.templates;
-    const handwrittenEmails = templatesResponse.handwritten_emails;
-    this.setState({ handwrittenEmails, templates });
+    const response = await generateTemplates(emailAddress);
+    if (response.result === 'failure') {
+      this.setState({ loaded: true });
+      showAlert('error', `Failed to generate templates: ${response.message}`, 10000);
+      return;
+    }
+
+    this.applyTemplatesResponse(response);
 
     showAlert("success", "Templates generated", 5000);
   }
 
-  private generateNewSnippets = async () => {
-    const { emailAddress } = this.props.match.params;
+  private applyTemplatesResponse = (response: TemplatesResponse) => {
+    const {
+      templates,
+      templates_with_vars: templatesWithVars,
+      potential_templates: potentialTemplates,
+      potential_templates_with_vars: potentialTemplatesWithVars,
+      paragraph_snippets: paragraphSnippets
+    } = response;
 
-    showAlert("info", "Processing...", 5000);
-
-    const snippetsResponse = await generateSnippets(emailAddress);
-    const snippets = snippetsResponse.snippets ? snippetsResponse.snippets : [];
-    this.setState({ snippets });
-
-    showAlert("success", "Snippets generated", 5000);
+    this.setState({
+      loaded: true,
+      templates,
+      templatesWithVars,
+      potentialTemplates,
+      potentialTemplatesWithVars,
+      paragraphSnippets
+    });
   }
 
-  private onListItemSelected = (item: Snippet, type: ItemType) => {
+
+  private onListItemSelected = (item: Template, type: TemplateType) => {
     this.setState({ selectedType: type, selectedItem: item });
   }
 
   private applyAllSnippets = async () => {
     const { emailAddress } = this.props.match.params;
+    const { templates } = this.state;
 
-    const { handwrittenEmails, snippets, templates } = this.state;
-
-    const all: Snippet[] = [...handwrittenEmails || [], ...snippets || [], ...templates || []];
+    const all: Template[] = templates || [];
 
     showAlert("info", "Processing...", 5000);
 
@@ -128,32 +137,24 @@ class TemplateEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemSave = (snippet: Snippet, text: string, trigger: string) => {
+  private onSelectedItemSave = (template: Template, text: string, trigger: string) => {
     const { selectedType, selectedItem } = this.state;
 
     if (!selectedType || !selectedItem) {
       return;
     }
 
-    if (selectedType === 'handwrittenEmail' && this.state.handwrittenEmails) {
-      const handwrittenEmails = this.state.handwrittenEmails.slice();
-      const idx = handwrittenEmails.indexOf(snippet);
+    if (selectedType === 'paragraph_snippets' && this.state.paragraphSnippets) {
+      const paragraphSnippets = this.state.paragraphSnippets.slice();
+      const idx = paragraphSnippets.indexOf(template);
 
-      handwrittenEmails[idx].snippet = text;
-      handwrittenEmails[idx].trigger = trigger;
+      paragraphSnippets[idx].snippet = text;
+      paragraphSnippets[idx].trigger = trigger;
 
-      this.setState({ handwrittenEmails });
-    } else if (selectedType === 'snippet' && this.state.snippets) {
-      const snippets = this.state.snippets.slice();
-      const idx = snippets.indexOf(snippet);
-
-      snippets[idx].snippet = text;
-      snippets[idx].trigger = trigger;
-
-      this.setState({ snippets });
-    } else if (selectedType === 'template' && this.state.templates) {
+      this.setState({ paragraphSnippets });
+    } else if (selectedType === 'templates' && this.state.templates) {
       const templates = this.state.templates.slice();
-      const idx = templates.indexOf(snippet);
+      const idx = templates.indexOf(template);
 
       templates[idx].snippet = text;
       templates[idx].trigger = trigger;
@@ -162,7 +163,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemApply = async (snippet: Snippet, text: string, trigger: string) => {
+  private onSelectedItemApply = async (snippet: Template, text: string, trigger: string) => {
     const { emailAddress } = this.props.match.params;
 
     this.onSelectedItemSave(snippet, text, trigger);
@@ -181,8 +182,15 @@ class TemplateEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemRemove = (snippet: Snippet) => {
-    const { selectedType, handwrittenEmails, snippets, templates } = this.state;
+  private onSelectedItemRemove = (snippet: Template) => {
+    const {
+      selectedType,
+      paragraphSnippets,
+      templates,
+      templatesWithVars,
+      potentialTemplates,
+      potentialTemplatesWithVars
+    } = this.state;
 
     if (!selectedType) {
       return;
@@ -190,24 +198,33 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     const trigger = snippet.trigger;
 
-    if (selectedType === 'handwrittenEmail' && handwrittenEmails) {
-      const updatedHandwrittenEmails = handwrittenEmails.slice().filter(s => s.trigger !== trigger);
+    if (selectedType === 'paragraph_snippets' && paragraphSnippets) {
       this.setState({
-        handwrittenEmails: updatedHandwrittenEmails,
+        paragraphSnippets: paragraphSnippets.slice().filter(s => s.trigger !== trigger),
         selectedItem: undefined,
         selectedType: undefined
       });
-    } else if (selectedType === 'snippet' && snippets) {
-      const updatedSnippets = snippets.slice().filter(s => s.trigger !== trigger);
+    } else if (selectedType === 'templates' && templates) {
       this.setState({
-        snippets: updatedSnippets,
+        templates: templates.slice().filter(s => s.trigger !== trigger),
         selectedItem: undefined,
         selectedType: undefined
       });
-    } else if (selectedType === 'template' && templates) {
-      const updatedTemplates = templates.slice().filter(s => s.trigger !== trigger);
+    } else if (selectedType === 'templates_with_vars' && templatesWithVars) {
       this.setState({
-        templates: updatedTemplates,
+        templatesWithVars: templatesWithVars.slice().filter(s => s.trigger !== trigger),
+        selectedItem: undefined,
+        selectedType: undefined
+      });
+    } else if (selectedType === 'potential_templates' && potentialTemplates) {
+      this.setState({
+        potentialTemplates: potentialTemplates.slice().filter(s => s.trigger !== trigger),
+        selectedItem: undefined,
+        selectedType: undefined
+      });
+    } else if (selectedType === 'potential_templates_with_vars' && potentialTemplatesWithVars) {
+      this.setState({
+        potentialTemplatesWithVars: potentialTemplatesWithVars.slice().filter(s => s.trigger !== trigger),
         selectedItem: undefined,
         selectedType: undefined
       });
@@ -215,18 +232,27 @@ class TemplateEditor extends React.Component<PropsType, State> {
   }
 
   public render() {
+    const { emailAddress } = this.props.match.params;
     const { classes } = this.props;
-    const { handwrittenEmails, snippets, templates, selectedItem } = this.state;
+    const {
+      templates,
+      templatesWithVars,
+      potentialTemplates,
+      potentialTemplatesWithVars,
+      paragraphSnippets,
+      selectedItem,
+      loaded
+    } = this.state;
 
-    if (!handwrittenEmails || !snippets || !templates) {
+    if (!loaded) {
       return (<Loading />);
     }
 
     return (
       <div className={classes.root}>
         <TemplateEditorToolbar
-          onApplyAll={this.applyAllSnippets}
-          onGenerateSnippets={this.generateNewSnippets}
+          emailAddress={emailAddress}
+          // onApplyAll={this.applyAllSnippets}
           onGenerateTemplates={this.generateNewTemplates}
         />
         <Box
@@ -235,9 +261,11 @@ class TemplateEditor extends React.Component<PropsType, State> {
           className={classes.content}
         >
           <SnippetsList
-            handwrittenEmails={handwrittenEmails}
-            snippets={snippets}
             templates={templates}
+            templatesWithVars={templatesWithVars}
+            potentialTemplates={potentialTemplates}
+            potentialTemplatesWithVars={potentialTemplatesWithVars}
+            paragraphSnippets={paragraphSnippets}
             selectedItem={selectedItem}
             onItemSelected={this.onListItemSelected}
           />

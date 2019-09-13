@@ -3,8 +3,8 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
 
-import { ItemType } from 'views/TemplateEditor/TemplateEditor';
-import { Snippet } from 'models/snippetGenerator';
+import { Template } from 'models/snippetGenerator';
+import { TemplateType } from 'api/snippetGenerator';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -29,11 +29,13 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  handwrittenEmails: Snippet[];
-  snippets: Snippet[];
-  templates: Snippet[];
-  selectedItem?: Snippet;
-  onItemSelected: (item: Snippet, type: ItemType) => void;
+  templatesWithVars?: Template[];
+  templates?: Template[];
+  potentialTemplatesWithVars?: Template[];
+  potentialTemplates?: Template[];
+  paragraphSnippets?: Template[];
+  selectedItem?: Template;
+  onItemSelected: (item: Template, type: TemplateType) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -47,24 +49,26 @@ class SnippetsList extends React.Component<PropsType, State> {
     const {
       classes,
       className,
-      handwrittenEmails,
-      snippets,
+      templatesWithVars,
       templates,
+      potentialTemplatesWithVars,
+      potentialTemplates,
+      paragraphSnippets,
       selectedItem,
       onItemSelected
     } = this.props;
 
     return (
       <List className={clsx(classes.root, className)} subheader={<li />}>
-        <li key={`section-snippets`} className={classes.listSection}>
+        <li key={`section-templatesWithVars`} className={classes.listSection}>
           <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Snippets`}</ListSubheader>
-            {snippets.map(i => (
+            <ListSubheader className={classes.listSubheader}>{`Templates with vars`}</ListSubheader>
+            {templatesWithVars && templatesWithVars.map(i => (
               <ListItem
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'snippet')}
+                onClick={() => onItemSelected(i, 'templates_with_vars')}
               >
                 <ListItemText primary={i.trigger} secondary={i.snippet} />
               </ListItem>
@@ -75,12 +79,12 @@ class SnippetsList extends React.Component<PropsType, State> {
         <li key={`section-templates`} className={classes.listSection}>
           <ul className={classes.ul}>
             <ListSubheader className={classes.listSubheader}>{`Templates`}</ListSubheader>
-            {templates.map(i => (
+            {templates && templates.map(i => (
               <ListItem
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'template')}
+                onClick={() => onItemSelected(i, 'templates')}
               >
                 <ListItemText primary={i.trigger} secondary={i.snippet} />
               </ListItem>
@@ -88,15 +92,47 @@ class SnippetsList extends React.Component<PropsType, State> {
           </ul>
         </li>
 
-        <li key={`section-handwrittenEmails`} className={classes.listSection}>
+        <li key={`section-potentialTemplatesWithVars`} className={classes.listSection}>
           <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Handwritten emails`}</ListSubheader>
-            {handwrittenEmails.map(i => (
+            <ListSubheader className={classes.listSubheader}>{`Potential templates with vars`}</ListSubheader>
+            {potentialTemplatesWithVars && potentialTemplatesWithVars.map(i => (
               <ListItem
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'handwrittenEmail')}
+                onClick={() => onItemSelected(i, 'potential_templates_with_vars')}
+              >
+                <ListItemText primary={i.trigger} secondary={i.snippet} />
+              </ListItem>
+            ))}
+          </ul>
+        </li>
+
+        <li key={`section-potentialTemplates`} className={classes.listSection}>
+          <ul className={classes.ul}>
+            <ListSubheader className={classes.listSubheader}>{`Potential templates`}</ListSubheader>
+            {potentialTemplates && potentialTemplates.map(i => (
+              <ListItem
+                button
+                key={i.trigger}
+                selected={i === selectedItem}
+                onClick={() => onItemSelected(i, 'potential_templates')}
+              >
+                <ListItemText primary={i.trigger} secondary={i.snippet} />
+              </ListItem>
+            ))}
+          </ul>
+        </li>
+
+        <li key={`section-snippets`} className={classes.listSection}>
+          <ul className={classes.ul}>
+            <ListSubheader className={classes.listSubheader}>{`Paragraph Snippets`}</ListSubheader>
+            {paragraphSnippets && paragraphSnippets.map(i => (
+              <ListItem
+                button
+                key={i.trigger}
+                selected={i === selectedItem}
+                onClick={() => onItemSelected(i, 'paragraph_snippets')}
               >
                 <ListItemText primary={i.trigger} secondary={i.snippet} />
               </ListItem>

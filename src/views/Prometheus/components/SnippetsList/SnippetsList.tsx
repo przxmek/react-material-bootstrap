@@ -3,7 +3,6 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
 
-import { ItemType } from 'views/TemplateEditor/TemplateEditor';
 import { PrometheusSnippet } from 'models/prometheus';
 
 const styles = (theme: Theme) => createStyles({
@@ -31,7 +30,7 @@ interface Props {
   className?: string;
   snippets: PrometheusSnippet[];
   selectedItem?: PrometheusSnippet;
-  onItemSelected: (item: PrometheusSnippet, type: ItemType) => void;
+  onItemSelected: (item: PrometheusSnippet) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -60,7 +59,7 @@ class SnippetsList extends React.Component<PropsType, State> {
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'snippet')}
+                onClick={() => onItemSelected(i)}
               >
                 <ListItemText primary={i.trigger} secondary={i.text} />
               </ListItem>

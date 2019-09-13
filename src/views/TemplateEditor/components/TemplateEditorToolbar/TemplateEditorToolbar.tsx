@@ -2,6 +2,7 @@ import { Button, Theme, Tooltip } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
+import { SNIPPET_GENERATOR_URL, SNIPPET_GENERATOR_PASS, SNIPPET_GENERATOR_USER } from 'config';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -24,8 +25,8 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  onApplyAll: () => void;
-  onGenerateSnippets: () => void;
+  emailAddress: string;
+  onApplyAll?: () => void;
   onGenerateTemplates: () => void;
 }
 
@@ -36,12 +37,33 @@ interface State {
 
 class TemplateEditorToolbar extends React.Component<PropsType, State> {
 
+  private downloadCSVs = async () => {
+    const { emailAddress } = this.props;
+
+    const files = [
+      "templates",
+      "templates_with_vars",
+      "potential_templates",
+      "potential_templates_with_vars",
+      "paragraph_snippets"
+    ];
+
+    for (const type of files) {
+      const url = `${SNIPPET_GENERATOR_URL}/snippets/${emailAddress}/${type}?csv`;
+      const authUrl = url.replace("://", `://${SNIPPET_GENERATOR_USER}:${SNIPPET_GENERATOR_PASS}@`);
+      window.open(authUrl);
+    }
+  }
+
+  private delay = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   public render() {
     const {
       classes,
       className,
       onApplyAll,
-      onGenerateSnippets,
       onGenerateTemplates
     } = this.props;
 
@@ -54,19 +76,19 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
             <Button
               variant="contained"
               className={classes.marginRight}
-              onClick={onGenerateSnippets}
-            >
-              Generate snippets
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Generate templates using snippet-generator">
-            <Button
-              variant="contained"
-              className={classes.marginRight}
               onClick={onGenerateTemplates}
             >
               Generate templates
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Download CSV files">
+            <Button
+              variant="contained"
+              className={classes.marginRight}
+              onClick={this.downloadCSVs}
+            >
+              Download CSV files
             </Button>
           </Tooltip>
 
@@ -76,6 +98,7 @@ class TemplateEditorToolbar extends React.Component<PropsType, State> {
               color="primary"
               className={classes.marginRight}
               onClick={onApplyAll}
+              disabled={!onApplyAll}
             >
               Apply all
             </Button>

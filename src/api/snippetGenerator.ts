@@ -4,65 +4,59 @@ import {
   SNIPPET_GENERATOR_PASS
 } from "config";
 import {
-  TemplatesResponse,
-  SnippetsResponse,
-  Snippet,
-  ApplyResponse
+  ApplyResponse,
+  Template,
+  TemplatesResponse
 } from "models/snippetGenerator";
 
 const URL = SNIPPET_GENERATOR_URL;
 const AuthHeader = `Basic ${btoa(`${SNIPPET_GENERATOR_USER}:${SNIPPET_GENERATOR_PASS}`)}`;
 
-export type SnippetType = "templates" | "snippets";
-
+export type TemplateType =
+  "templates" |
+  "templates_with_vars" |
+  "potential_templates" |
+  "potential_templates_with_vars" |
+  "paragraph_snippets";
 
 export async function fetchTemplates(
-  emailAddress: string
+  emailAddress: string,
+  type?: TemplateType
 ): Promise<TemplatesResponse> {
-  const response = await fetchSnippetsInternal(emailAddress, "templates");
-  return processTemplatesResponse(response);
-}
-
-export async function fetchSnippets(
-  emailAddress: string
-): Promise<SnippetsResponse> {
-  const response = await fetchSnippetsInternal(emailAddress, "snippets");
-  if (response.result !== 'failure') {
-    return processSnippetsResponse(response);
-  } else {
-    return response;
-  }
+  const response = await fetchTemplatesInternal(emailAddress, type);
+  return processResponse(response);
 }
 
 export async function generateTemplates(
   emailAddress: string
 ): Promise<TemplatesResponse> {
-  const response = await generateSnippetsInternal(emailAddress, "templates");
-  return processTemplatesResponse(response);
-}
-
-export async function generateSnippets(
-  emailAddress: string
-): Promise<SnippetsResponse> {
-  const response = await generateSnippetsInternal(emailAddress, "snippets");
-  return processSnippetsResponse(response);
+  const response = await generateTemplatesInternal(emailAddress);
+  return response;
 }
 
 export async function applySnippets(
   emailAddress: string,
-  snippets: Snippet[],
+  snippets: Template[],
   sendEmail?: boolean
 ): Promise<ApplyResponse> {
   return await applySnippetsInternal(emailAddress, snippets, sendEmail);
 }
 
-async function fetchSnippetsInternal(
+async function fetchTemplatesInternal(
   emailAddress: string,
-  type: SnippetType,
-  asCsv: boolean = false
+  type?: TemplateType,
+  csv?: boolean
 ): Promise<any> {
-  const response = await fetch(
-    `${URL}/snippets/${emailAddress}/${type}/${asCsv}`,
+  // Build the URL
+  let url = `${URL}/snippets/${emailAddress}`;
+  if (type) {
+    url = `${url}/${type}`;
+    if (csv) {
+      url = `${url}?csv`;
+    }
+  }
+
+  const response = await fetch(url,
     {
       method: 'GET',
       headers: {
@@ -71,16 +65,17 @@ async function fetchSnippetsInternal(
     }
   );
 
-  const json = await response.json();
-  return json;
+  if (!csv) {
+    const json = await response.json();
+    return json;
+  } else {
+    return response;
+  }
 }
 
-async function generateSnippetsInternal(
-  emailAddress: string,
-  type: SnippetType,
-): Promise<any> {
+async function generateTemplatesInternal(emailAddress: string): Promise<any> {
   const response = await fetch(
-    `${URL}/snippets/${emailAddress}/${type}/generate`,
+    `${URL}/snippets/${emailAddress}/generate`,
     {
       method: 'POST',
       headers: {
@@ -95,7 +90,7 @@ async function generateSnippetsInternal(
 
 async function applySnippetsInternal(
   emailAddress: string,
-  snippets: Snippet[],
+  snippets: Template[],
   sendEmail: boolean = false
 ): Promise<any> {
   const response = await fetch(
@@ -114,48 +109,64 @@ async function applySnippetsInternal(
   return json;
 }
 
-function wrapIntoObject(snippet: string, trigger: string = '', score?: number): Snippet {
-  return {
-    trigger,
-    snippet,
-    score,
-  };
-}
-
-function processTemplatesResponse(response: any) {
-  if (response.templates) {
-    // Flatten templates array madness
-    response.templates = [].concat(...response.templates);
-
-    // Convert strings into Snippet objects
-    response.templates = response.templates.map(
-      (s: string, idx: number) =>
-        wrapIntoObject(s, `template-${idx + 1}`)
-    );
-  } else {
-    response.templates = [];
+function processResponse(response: any) {
+  if (response.paragraph_snippets) {
+    response.paragraph_snippets = processSnippets(response.paragraph_snippets, 'snippet');
   }
 
-  if (response.handwritten_emails) {
-    response.handwritten_emails = response.handwritten_emails.map(
-      (s: string, idx: number) =>
-        wrapIntoObject(s, `handwritten-email-${idx + 1}`)
+  if (response.templates_with_vars) {
+    response.templates_with_vars = processTemplatesWithVars(
+      response.templates_with_vars,
+      'template-with-var'
     );
-  } else {
-    response.handwritten_emails = [];
+  }
+
+  if (response.templates) {
+    response.templates = processTemplates(response.templates, 'template');
+  }
+
+  if (response.potential_templates_with_vars) {
+    response.potential_templates_with_vars = processTemplatesWithVars(
+      response.potential_templates_with_vars,
+      'potential-template-with-var'
+    );
+  }
+
+  if (response.potential_templates) {
+    response.potential_templates = processTemplates(response.potential_templates, 'potential-template');
   }
 
   return response;
 }
 
-function processSnippetsResponse(response: any) {
-  // Convert snippet objects into Snippet objects
-  response = response.map(
-    (s: { snippet: string }, idx: number) =>
-      wrapIntoObject(s.snippet, `snippet-${idx + 1}`)
+function processTemplates(data: any, name: string): Template[] {
+  // Flatten templates array
+  data = [].concat(...data);
+
+  // Convert str[] into Template[]
+  return data.map((s: string, idx: number) =>
+    wrapIntoObject(s, `${name}-${idx + 1}`)
   );
-  
+}
+
+function processTemplatesWithVars(data: string[], name: string): Template[] {
+  // Convert string[] into Template[]
+  return data.map((s: string, idx: number) =>
+    wrapIntoObject(s, `${name}-${idx + 1}`)
+  );
+}
+
+function processSnippets(data: any[][], name: string): Template[] {
+  // Convert [snippet, count][] into Template[]
+  return data.map((item: any[], idx: number) =>
+    wrapIntoObject(item[0], `${name}-${idx + 1}`, item[1])
+  );
+}
+
+function wrapIntoObject(snippet: string, trigger: string = '', score?: number): Template {
   return {
-    snippets: response,
+    trigger,
+    snippet,
+    score,
   };
 }
