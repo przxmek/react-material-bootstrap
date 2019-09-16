@@ -12,7 +12,6 @@ const styles = (theme: Theme) => createStyles({
     maxWidth: 480,
     backgroundColor: theme.palette.background.paper,
     overflow: 'auto',
-    maxHeight: 800,
   },
   listSubheader: {
     fontSize: theme.typography.pxToRem(24),

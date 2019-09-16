@@ -1,4 +1,4 @@
-import { Theme, Button, TextField, Grid } from '@material-ui/core';
+import { Theme, Button, TextField, Grid, TextareaAutosize, FormControlLabel, Checkbox, Box } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteOutlined';
@@ -9,13 +9,20 @@ import { Template } from 'models/snippetGenerator';
 const styles = (theme: Theme) => createStyles({
   root: {
     backgroundColor: theme.palette.common.white,
-    height: '100%',
     padding: theme.spacing(2),
+    height: '100%'
   },
-  editor: {
-    height: 600,
-    marginTop: 16,
-    paddingBottom: 48,
+  editorText: {
+    width: '100%',
+    marginTop: '1rem',
+    marginBottom: '1rem',
+    paddingBottom: '3rem',
+  },
+  editorHTML: {
+    height: 400,
+    marginTop: '1rem',
+    marginBottom: '1rem',
+    paddingBottom: '3rem',
   },
   iconLeft: {
     marginRight: theme.spacing(1),
@@ -32,6 +39,7 @@ interface Props {
 type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
+  htmlEditor: boolean;
   text: string;
   trigger: string;
 }
@@ -64,6 +72,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
+      htmlEditor: false,
       text: props.snippet.snippet,
       trigger: props.snippet.trigger,
     };
@@ -86,10 +95,15 @@ class RichTextEditor extends React.Component<PropsType, State> {
 
   public render() {
     const { classes, onApply, onRemove, onSave, snippet } = this.props;
-    const { text, trigger } = this.state;
+    const { text, trigger, htmlEditor } = this.state;
 
     return (
-      <div className={classes.root}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        className={classes.root}
+      >
+
         <TextField
           label="Trigger"
           helperText="A trigger for this snippet."
@@ -101,13 +115,41 @@ class RichTextEditor extends React.Component<PropsType, State> {
             shrink: true,
           }}
         />
-        <ReactQuill.default
-          value={text}
-          onChange={this.onTextChange}
-          modules={this.modules}
-          formats={this.formats}
-          className={classes.editor}
+
+        <FormControlLabel
+          label="HTML Editor"
+          control={
+            <Checkbox
+              checked={htmlEditor}
+              onChange={() => this.setState({ htmlEditor: !htmlEditor })}
+              inputProps={{
+                'aria-label': 'HTML Editor toggle checkbox',
+              }}
+            />
+          }
         />
+
+        {!htmlEditor && (
+          <TextareaAutosize
+            className={classes.editorText}
+            rows={20}
+            rowsMax={40}
+            placeholder="Snippet text.."
+            value={text}
+            onChange={(ev) => { this.onTextChange(ev.target.value); }}
+          />
+        )}
+
+        {htmlEditor && (
+          <ReactQuill.default
+            value={text}
+            onChange={this.onTextChange}
+            modules={this.modules}
+            formats={this.formats}
+            className={classes.editorHTML}
+          />
+        )}
+
         <Grid container spacing={1}>
           <Grid item>
             <Button variant="outlined" onClick={() => onRemove(snippet)}>
@@ -127,7 +169,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
             </Button>
           </Grid>
         </Grid>
-      </div>
+      </Box>
     );
   }
 }

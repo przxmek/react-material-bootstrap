@@ -1,4 +1,4 @@
-import { Box, Theme, Typography } from '@material-ui/core';
+import { Box, Theme } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
@@ -15,10 +15,22 @@ import { Template, TemplatesResponse } from 'models/snippetGenerator';
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    padding: theme.spacing(3)
+    padding: theme.spacing(3),
   },
   content: {
-    marginTop: theme.spacing(2)
+    marginTop: theme.spacing(2),
+    flex: '0 1 auto',
+    maxHeight: 700,
+  },
+  rightContent: {
+    marginLeft: theme.spacing(),
+  },
+  noItem: {
+    ...theme.typography.button,
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    height: '100%',
   }
 });
 
@@ -270,17 +282,21 @@ class TemplateEditor extends React.Component<PropsType, State> {
             onItemSelected={this.onListItemSelected}
           />
 
-          {!selectedItem && (
-            <Typography>Select an item from the list first.</Typography>
-          )}
-          {selectedItem && (
-            <RichTextEditor
-              snippet={selectedItem}
-              onApply={this.onSelectedItemApply}
-              onRemove={this.onSelectedItemRemove}
-              onSave={this.onSelectedItemSave}
-            />
-          )}
+          <Box flexGrow={1} className={classes.rightContent}>
+            {!selectedItem && (
+              <div className={classes.noItem}>
+                Select an item from the list first.
+              </div>
+            )}
+            {selectedItem && (
+              <RichTextEditor
+                snippet={selectedItem}
+                onApply={this.onSelectedItemApply}
+                onRemove={this.onSelectedItemRemove}
+                onSave={this.onSelectedItemSave}
+              />
+            )}
+          </Box>
 
         </Box>
       </div>
