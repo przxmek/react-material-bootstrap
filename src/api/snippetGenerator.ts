@@ -166,7 +166,11 @@ function processSnippets(data: any[][], name: string): Template[] {
 function wrapIntoObject(snippet: string, trigger: string = '', score?: number): Template {
   return {
     trigger,
-    snippet,
+    snippet: newLineToBrElement(snippet),
     score,
   };
+}
+
+function newLineToBrElement(text: string): string {
+  return text.split('\n').join('<br>\n');
 }
