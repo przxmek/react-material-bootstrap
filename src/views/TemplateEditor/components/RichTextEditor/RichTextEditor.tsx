@@ -72,7 +72,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      htmlEditor: false,
+      htmlEditor: true,
       text: props.snippet.snippet,
       trigger: props.snippet.trigger,
     };
