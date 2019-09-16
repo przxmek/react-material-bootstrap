@@ -17,6 +17,10 @@ export interface Template {
 
 export interface ApplyResponse {
   result: ApplyResponseItem[];
+
+  status?: "failure";
+  message?: string;
+  traceback?: string[];
 }
 
 export interface ApplyResponseItem extends Template {

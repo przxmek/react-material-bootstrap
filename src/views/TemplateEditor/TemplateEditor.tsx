@@ -184,13 +184,16 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     showAlert("info", "Processing...", 5000);
 
-    const result = await applySnippets(emailAddress, snippets);
-    const status = result.result[0].status;
-
-    if (status === 'added') {
-      showAlert("success", "Snippet added to Prometheus profile", 5000);
+    const response = await applySnippets(emailAddress, snippets);
+    if (response.status === 'failure') {
+      showAlert("error", `Failed to apply snippet: ${response.message}`, 30000);
     } else {
-      showAlert("error", `Something went wrong: ${status}`, 30000);
+      const status = response.result[0].status;
+      if (status === 'added') {
+        showAlert("success", "Snippet added to Prometheus profile", 5000);
+      } else {
+        showAlert("error", `Failed to apply snippet: ${status}`, 30000);
+      }
     }
   }
 
