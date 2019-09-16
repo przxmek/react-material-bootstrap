@@ -166,11 +166,20 @@ function processSnippets(data: any[][], name: string): Template[] {
 function wrapIntoObject(snippet: string, trigger: string = '', score?: number): Template {
   return {
     trigger,
-    snippet: newLineToBrElement(snippet),
+    snippet: newLineToBrElement(escapeTags(snippet)),
     score,
   };
 }
 
 function newLineToBrElement(text: string): string {
-  return text.split('\n').join('<br>\n');
+  return text.replace(/\n/g, '<br>\n');
+}
+
+function escapeTags(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
