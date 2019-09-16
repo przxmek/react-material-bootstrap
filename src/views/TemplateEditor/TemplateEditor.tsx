@@ -172,6 +172,30 @@ class TemplateEditor extends React.Component<PropsType, State> {
       templates[idx].trigger = trigger;
 
       this.setState({ templates });
+    } else if (selectedType === 'templates_with_vars' && this.state.templatesWithVars) {
+      const templatesWithVars = this.state.templatesWithVars.slice();
+      const idx = templatesWithVars.indexOf(template);
+
+      templatesWithVars[idx].snippet = text;
+      templatesWithVars[idx].trigger = trigger;
+
+      this.setState({ templatesWithVars });
+    } else if (selectedType === 'potential_templates' && this.state.potentialTemplates) {
+      const potentialTemplates = this.state.potentialTemplates.slice();
+      const idx = potentialTemplates.indexOf(template);
+
+      potentialTemplates[idx].snippet = text;
+      potentialTemplates[idx].trigger = trigger;
+
+      this.setState({ potentialTemplates });
+    } else if (selectedType === 'potential_templates_with_vars' && this.state.potentialTemplatesWithVars) {
+      const potentialTemplatesWithVars = this.state.potentialTemplatesWithVars.slice();
+      const idx = potentialTemplatesWithVars.indexOf(template);
+
+      potentialTemplatesWithVars[idx].snippet = text;
+      potentialTemplatesWithVars[idx].trigger = trigger;
+
+      this.setState({ potentialTemplatesWithVars });
     }
   }
 
