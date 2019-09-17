@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/styles';
-import { useMediaQuery } from '@material-ui/core';
+import { useMediaQuery, Theme } from '@material-ui/core';
 
 import { Sidebar, Topbar, Footer } from './components';
+import { Auth, unauthorized } from 'auth';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     paddingTop: 56,
     height: '100%',
@@ -24,16 +24,20 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Main = props => {
+interface Props { }
+
+const Main: React.SFC<Props> = (props) => {
   const { children } = props;
 
   const classes = useStyles();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true
   });
 
   const [openSidebar, setOpenSidebar] = useState(false);
+  const [auth, setAuth] = useState<Auth>(unauthorized());
+  const { user } = auth;
 
   const handleSidebarOpen = () => {
     setOpenSidebar(true);
@@ -52,11 +56,15 @@ const Main = props => {
         [classes.shiftContent]: isDesktop
       })}
     >
-      <Topbar onSidebarOpen={handleSidebarOpen} />
+      <Topbar
+        onAuth={setAuth}
+        onSidebarOpen={handleSidebarOpen}
+      />
       <Sidebar
         onClose={handleSidebarClose}
         open={shouldOpenSidebar}
         variant={isDesktop ? 'persistent' : 'temporary'}
+        user={user}
       />
       <main className={classes.content}>
         {children}
@@ -64,10 +72,6 @@ const Main = props => {
       </main>
     </div>
   );
-};
-
-Main.propTypes = {
-  children: PropTypes.node
 };
 
 export default Main;
