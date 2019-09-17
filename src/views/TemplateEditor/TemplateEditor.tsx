@@ -1,4 +1,4 @@
-import { Box, Theme, Typography } from '@material-ui/core';
+import { Box, Theme } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
@@ -15,10 +15,22 @@ import { Template, TemplatesResponse } from 'models/snippetGenerator';
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    padding: theme.spacing(3)
+    padding: theme.spacing(3),
   },
   content: {
-    marginTop: theme.spacing(2)
+    marginTop: theme.spacing(2),
+    flex: '0 1 auto',
+    maxHeight: 700,
+  },
+  rightContent: {
+    marginLeft: theme.spacing(),
+  },
+  noItem: {
+    ...theme.typography.button,
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    height: '100%',
   }
 });
 
@@ -160,6 +172,30 @@ class TemplateEditor extends React.Component<PropsType, State> {
       templates[idx].trigger = trigger;
 
       this.setState({ templates });
+    } else if (selectedType === 'templates_with_vars' && this.state.templatesWithVars) {
+      const templatesWithVars = this.state.templatesWithVars.slice();
+      const idx = templatesWithVars.indexOf(template);
+
+      templatesWithVars[idx].snippet = text;
+      templatesWithVars[idx].trigger = trigger;
+
+      this.setState({ templatesWithVars });
+    } else if (selectedType === 'potential_templates' && this.state.potentialTemplates) {
+      const potentialTemplates = this.state.potentialTemplates.slice();
+      const idx = potentialTemplates.indexOf(template);
+
+      potentialTemplates[idx].snippet = text;
+      potentialTemplates[idx].trigger = trigger;
+
+      this.setState({ potentialTemplates });
+    } else if (selectedType === 'potential_templates_with_vars' && this.state.potentialTemplatesWithVars) {
+      const potentialTemplatesWithVars = this.state.potentialTemplatesWithVars.slice();
+      const idx = potentialTemplatesWithVars.indexOf(template);
+
+      potentialTemplatesWithVars[idx].snippet = text;
+      potentialTemplatesWithVars[idx].trigger = trigger;
+
+      this.setState({ potentialTemplatesWithVars });
     }
   }
 
@@ -172,13 +208,16 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     showAlert("info", "Processing...", 5000);
 
-    const result = await applySnippets(emailAddress, snippets);
-    const status = result.result[0].status;
-
-    if (status === 'added') {
-      showAlert("success", "Snippet added to Prometheus profile", 5000);
+    const response = await applySnippets(emailAddress, snippets);
+    if (response.status === 'failure') {
+      showAlert("error", `Failed to apply snippet: ${response.message}`, 30000);
     } else {
-      showAlert("error", `Something went wrong: ${status}`, 30000);
+      const status = response.result[0].status;
+      if (status === 'added') {
+        showAlert("success", "Snippet added to Prometheus profile", 5000);
+      } else {
+        showAlert("error", `Failed to apply snippet: ${status}`, 30000);
+      }
     }
   }
 
@@ -270,17 +309,21 @@ class TemplateEditor extends React.Component<PropsType, State> {
             onItemSelected={this.onListItemSelected}
           />
 
-          {!selectedItem && (
-            <Typography>Select an item from the list first.</Typography>
-          )}
-          {selectedItem && (
-            <RichTextEditor
-              snippet={selectedItem}
-              onApply={this.onSelectedItemApply}
-              onRemove={this.onSelectedItemRemove}
-              onSave={this.onSelectedItemSave}
-            />
-          )}
+          <Box flexGrow={1} className={classes.rightContent}>
+            {!selectedItem && (
+              <div className={classes.noItem}>
+                Select an item from the list first.
+              </div>
+            )}
+            {selectedItem && (
+              <RichTextEditor
+                snippet={selectedItem}
+                onApply={this.onSelectedItemApply}
+                onRemove={this.onSelectedItemRemove}
+                onSave={this.onSelectedItemSave}
+              />
+            )}
+          </Box>
 
         </Box>
       </div>
