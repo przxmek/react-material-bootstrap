@@ -30,8 +30,8 @@ const styles = (theme: Theme) => createStyles({
 });
 
 interface Props {
-  snippet: Template;
-  onApply: (snippet: Template, newText: string, newTrigger: string) => void;
+  snippet?: Template;
+  onApply: (newText: string, newTrigger: string, snippet?: Template) => void;
   onRemove: (snippet: Template) => void;
   onSave: (snippet: Template, newText: string, newTrigger: string) => void;
 }
@@ -71,17 +71,23 @@ class RichTextEditor extends React.Component<PropsType, State> {
   constructor(props: PropsType) {
     super(props);
 
+
+
     this.state = {
       htmlEditor: true,
-      text: props.snippet.snippet,
-      trigger: props.snippet.trigger,
+      text: props.snippet ? props.snippet.snippet : "",
+      trigger: props.snippet ? props.snippet.trigger : "",
     };
   }
 
   public componentDidUpdate(prevProps: PropsType) {
     const { snippet } = this.props;
     if (snippet !== prevProps.snippet) {
-      this.setState({ text: snippet.snippet, trigger: snippet.trigger });
+      if (snippet) {
+        this.setState({ text: snippet.snippet, trigger: snippet.trigger });
+      } else {
+        this.setState({ text: "", trigger: "" });
+      }
     }
   }
 
@@ -152,19 +158,28 @@ class RichTextEditor extends React.Component<PropsType, State> {
 
         <Grid container spacing={1}>
           <Grid item>
-            <Button variant="outlined" onClick={() => onRemove(snippet)}>
+            <Button
+              variant="outlined"
+              disabled={!snippet}
+              onClick={() => snippet && onRemove(snippet)}
+            >
               <DeleteIcon className={classes.iconLeft} />
               Remove
             </Button>
           </Grid>
           <Grid item xs></Grid>
           <Grid item>
-            <Button variant="outlined" onClick={() => onApply(snippet, text, trigger)}>
+            <Button variant="outlined" onClick={() => onApply(text, trigger, snippet)}>
               Apply to profile
             </Button>
           </Grid>
           <Grid item>
-            <Button variant="contained" color="primary" onClick={() => onSave(snippet, text, trigger)}>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!snippet}
+              onClick={() => snippet && onSave(snippet, text, trigger)}
+              >
               Save edits
             </Button>
           </Grid>
