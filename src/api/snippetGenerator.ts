@@ -5,25 +5,32 @@ import {
 } from "config";
 import {
   ApplyResponse,
-  Template,
   TemplatesResponse
 } from "models/snippetGenerator";
+import { Template, TemplateType } from "models/templates";
 
 const URL = SNIPPET_GENERATOR_URL;
 const AuthHeader = `Basic ${btoa(`${SNIPPET_GENERATOR_USER}:${SNIPPET_GENERATOR_PASS}`)}`;
 
-export type TemplateType =
+export type SnippetGeneratorTemplateType =
   "templates" |
   "templates_with_vars" |
   "potential_templates" |
   "potential_templates_with_vars" |
   "paragraph_snippets";
 
+export interface SnippetGeneratorTemplate {
+  score?: number;
+  text: string;
+  trigger: string;
+}
+
 export async function fetchTemplates(
   emailAddress: string,
   type?: TemplateType
 ): Promise<TemplatesResponse> {
-  const response = await fetchTemplatesInternal(emailAddress, type);
+  const internalType = type ? toSGType(type) : undefined;
+  const response = await fetchTemplatesInternal(emailAddress, internalType);
   return processResponse(response);
 }
 
@@ -36,7 +43,7 @@ export async function generateTemplates(
 
 export async function applySnippets(
   emailAddress: string,
-  snippets: Template[],
+  snippets: SnippetGeneratorTemplate[],
   sendEmail?: boolean
 ): Promise<ApplyResponse> {
   return await applySnippetsInternal(emailAddress, snippets, sendEmail);
@@ -44,7 +51,7 @@ export async function applySnippets(
 
 async function fetchTemplatesInternal(
   emailAddress: string,
-  type?: TemplateType,
+  type?: SnippetGeneratorTemplateType,
   csv?: boolean
 ): Promise<any> {
   // Build the URL
@@ -90,7 +97,7 @@ async function generateTemplatesInternal(emailAddress: string): Promise<any> {
 
 async function applySnippetsInternal(
   emailAddress: string,
-  snippets: Template[],
+  snippets: SnippetGeneratorTemplate[],
   sendEmail: boolean = false
 ): Promise<any> {
   const response = await fetch(
@@ -111,63 +118,87 @@ async function applySnippetsInternal(
 
 function processResponse(response: any) {
   if (response.paragraph_snippets) {
-    response.paragraph_snippets = processSnippets(response.paragraph_snippets, 'snippet');
+    response.paragraph_snippets = processSnippets(
+      response.paragraph_snippets,
+      "paragraph_snippets"
+    );
   }
 
   if (response.templates_with_vars) {
     response.templates_with_vars = processTemplatesWithVars(
       response.templates_with_vars,
-      'template-with-var'
+      "templates_with_vars"
     );
   }
 
   if (response.templates) {
-    response.templates = processTemplates(response.templates, 'template');
+    response.templates = processTemplates(
+      response.templates,
+      "templates"
+    );
   }
 
   if (response.potential_templates_with_vars) {
     response.potential_templates_with_vars = processTemplatesWithVars(
       response.potential_templates_with_vars,
-      'potential-template-with-var'
+      "potential_templates_with_vars"
     );
   }
 
   if (response.potential_templates) {
-    response.potential_templates = processTemplates(response.potential_templates, 'potential-template');
+    response.potential_templates = processTemplates(
+      response.potential_templates,
+      "potential_templates"
+    );
   }
 
   return response;
 }
 
-function processTemplates(data: any, name: string): Template[] {
+function processTemplates(
+  data: any,
+  type: SnippetGeneratorTemplateType
+): Template[] {
   // Flatten templates array
   data = [].concat(...data);
 
   // Convert str[] into Template[]
   return data.map((s: string, idx: number) =>
-    wrapIntoObject(s, `${name}-${idx + 1}`)
+    wrapIntoObject(s, type, `${typeToName(type)}-${idx + 1}`)
   );
 }
 
-function processTemplatesWithVars(data: string[], name: string): Template[] {
+function processTemplatesWithVars(
+  data: string[],
+  type: SnippetGeneratorTemplateType
+): Template[] {
   // Convert string[] into Template[]
   return data.map((s: string, idx: number) =>
-    wrapIntoObject(s, `${name}-${idx + 1}`)
+    wrapIntoObject(s, type, `${typeToName(type)}-${idx + 1}`)
   );
 }
 
-function processSnippets(data: any[][], name: string): Template[] {
+function processSnippets(
+  data: any[][],
+  type: SnippetGeneratorTemplateType,
+): Template[] {
   // Convert [snippet, count][] into Template[]
   return data.map((item: any[], idx: number) =>
-    wrapIntoObject(item[0], `${name}-${idx + 1}`, item[1])
+    wrapIntoObject(item[0], type, `${typeToName(type)}-${idx + 1}`, item[1])
   );
 }
 
-function wrapIntoObject(snippet: string, trigger: string = '', score?: number): Template {
+function wrapIntoObject(
+  text: string,
+  type: SnippetGeneratorTemplateType,
+  trigger: string = '',
+  score?: number
+): Template {
   return {
-    trigger,
-    snippet: newLineToBrElement(escapeTags(snippet)),
     score,
+    text: newLineToBrElement(escapeTags(text)),
+    trigger,
+    type: convertType(type)
   };
 }
 
@@ -182,4 +213,55 @@ function escapeTags(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function convertType(sgType: SnippetGeneratorTemplateType): TemplateType {
+  switch (sgType) {
+    case 'templates':
+      return "template";
+    case "templates_with_vars":
+      return "templateWithVars";
+    case "potential_templates":
+      return "potentialTemplate";
+    case "potential_templates_with_vars":
+      return "potentialTemplateWithVars";
+    case "paragraph_snippets":
+      return "paragraphSnippet";
+    default:
+      throw new Error("Invalid template type");
+  }
+}
+
+function typeToName(sgType: SnippetGeneratorTemplateType): string {
+  switch (sgType) {
+    case 'templates':
+      return "template";
+    case "templates_with_vars":
+      return "template-with-var";
+    case "potential_templates":
+      return "potential-template";
+    case "potential_templates_with_vars":
+      return "potential-template-with-var";
+    case "paragraph_snippets":
+      return "paragraph-snippet";
+    default:
+      throw new Error("Invalid template type");
+  }
+}
+
+function toSGType(type: TemplateType): SnippetGeneratorTemplateType {
+  switch (type) {
+    case 'template':
+      return "templates";
+    case "templateWithVars":
+      return "templates_with_vars";
+    case "potentialTemplate":
+      return "potential_templates";
+    case "potentialTemplateWithVars":
+      return "potential_templates_with_vars";
+    case "paragraphSnippet":
+      return "paragraph_snippets";
+    default:
+      throw new Error("Invalid template type");
+  }
 }

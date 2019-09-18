@@ -5,12 +5,13 @@ import { RouteComponentProps } from 'react-router-dom';
 import {
   fetchTemplates,
   applySnippets,
-  generateTemplates,
-  TemplateType
+  generateTemplates
 } from 'api/snippetGenerator';
 import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
 import { Loading, showAlert } from 'components';
-import { Template, TemplatesResponse } from 'models/snippetGenerator';
+import { TemplatesResponse } from 'models/snippetGenerator';
+import { Template, PrometheusTemplate } from 'models/templates';
+import { fetchSnippets } from 'api/prometheus';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -46,8 +47,11 @@ interface State {
   potentialTemplates?: Template[];
   potentialTemplatesWithVars?: Template[];
   paragraphSnippets?: Template[];
+
+  prometheusSnippets?: PrometheusTemplate[];
+
   selectedItem?: Template;
-  selectedType?: TemplateType;
+
   loaded: boolean;
 }
 
@@ -61,8 +65,11 @@ class TemplateEditor extends React.Component<PropsType, State> {
       potentialTemplates: undefined,
       potentialTemplatesWithVars: undefined,
       paragraphSnippets: undefined,
+      
+      prometheusSnippets: undefined,
+
       selectedItem: undefined,
-      selectedType: undefined,
+
       loaded: false
     };
   }
@@ -70,6 +77,11 @@ class TemplateEditor extends React.Component<PropsType, State> {
   public componentDidMount = async () => {
     const { emailAddress } = this.props.match.params;
 
+    this.loadSnippetGeneratorData(emailAddress);
+    this.loadPrometheusData(emailAddress);
+  }
+
+  private loadSnippetGeneratorData = async (emailAddress: string) => {
     const response = await fetchTemplates(emailAddress);
 
     if (response.status === "failure") {
@@ -78,6 +90,13 @@ class TemplateEditor extends React.Component<PropsType, State> {
     }
 
     this.applyTemplatesResponse(response);
+  }
+
+  private loadPrometheusData = async (emailAddress: string) => {
+    const response = await fetchSnippets(emailAddress);
+    const prometheusSnippets = [...response.custom, ...response.generated];
+
+    this.setState({ prometheusSnippets });
   }
 
   private generateNewTemplates = async () => {
@@ -118,8 +137,8 @@ class TemplateEditor extends React.Component<PropsType, State> {
   }
 
 
-  private onListItemSelected = (item: Template, type: TemplateType) => {
-    this.setState({ selectedType: type, selectedItem: item });
+  private onListItemSelected = (item: Template) => {
+    this.setState({ selectedItem: item });
   }
 
   private applyAllSnippets = async () => {
@@ -150,51 +169,59 @@ class TemplateEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemSave = (template: Template, text: string, trigger: string) => {
-    const { selectedType, selectedItem } = this.state;
+  private onSelectedItemSave = (newText: string, newTrigger: string, template?: Template) => {
+    const { selectedItem } = this.state;
 
-    if (!selectedType || !selectedItem) {
+
+    if (!selectedItem && !template) {
+      // TODO save new custom template
+      return;
+    }
+    
+    if (!selectedItem || !template) {
       return;
     }
 
-    if (selectedType === 'paragraph_snippets' && this.state.paragraphSnippets) {
+    const selectedType = selectedItem.type;
+
+    if (selectedType === "paragraphSnippet" && this.state.paragraphSnippets) {
       const paragraphSnippets = this.state.paragraphSnippets.slice();
       const idx = paragraphSnippets.indexOf(template);
 
-      paragraphSnippets[idx].snippet = text;
-      paragraphSnippets[idx].trigger = trigger;
+      paragraphSnippets[idx].text = newText;
+      paragraphSnippets[idx].trigger = newTrigger;
 
       this.setState({ paragraphSnippets });
-    } else if (selectedType === 'templates' && this.state.templates) {
+    } else if (selectedType === "template" && this.state.templates) {
       const templates = this.state.templates.slice();
       const idx = templates.indexOf(template);
 
-      templates[idx].snippet = text;
-      templates[idx].trigger = trigger;
+      templates[idx].text = newText;
+      templates[idx].trigger = newTrigger;
 
       this.setState({ templates });
-    } else if (selectedType === 'templates_with_vars' && this.state.templatesWithVars) {
+    } else if (selectedType === "templateWithVars" && this.state.templatesWithVars) {
       const templatesWithVars = this.state.templatesWithVars.slice();
       const idx = templatesWithVars.indexOf(template);
 
-      templatesWithVars[idx].snippet = text;
-      templatesWithVars[idx].trigger = trigger;
+      templatesWithVars[idx].text = newText;
+      templatesWithVars[idx].trigger = newTrigger;
 
       this.setState({ templatesWithVars });
-    } else if (selectedType === 'potential_templates' && this.state.potentialTemplates) {
+    } else if (selectedType === "potentialTemplate" && this.state.potentialTemplates) {
       const potentialTemplates = this.state.potentialTemplates.slice();
       const idx = potentialTemplates.indexOf(template);
 
-      potentialTemplates[idx].snippet = text;
-      potentialTemplates[idx].trigger = trigger;
+      potentialTemplates[idx].text = newText;
+      potentialTemplates[idx].trigger = newTrigger;
 
       this.setState({ potentialTemplates });
-    } else if (selectedType === 'potential_templates_with_vars' && this.state.potentialTemplatesWithVars) {
+    } else if (selectedType === "potentialTemplateWithVars" && this.state.potentialTemplatesWithVars) {
       const potentialTemplatesWithVars = this.state.potentialTemplatesWithVars.slice();
       const idx = potentialTemplatesWithVars.indexOf(template);
 
-      potentialTemplatesWithVars[idx].snippet = text;
-      potentialTemplatesWithVars[idx].trigger = trigger;
+      potentialTemplatesWithVars[idx].text = newText;
+      potentialTemplatesWithVars[idx].trigger = newTrigger;
 
       this.setState({ potentialTemplatesWithVars });
     }
@@ -204,10 +231,10 @@ class TemplateEditor extends React.Component<PropsType, State> {
     const { emailAddress } = this.props.match.params;
 
     if (snippet) {
-      this.onSelectedItemSave(snippet, text, trigger);
+      this.onSelectedItemSave(text, trigger, snippet);
     }
 
-    const snippets = snippet ? [snippet] : [{ trigger, snippet: text }];
+    const snippets = snippet ? [snippet] : [{ trigger, text }];
 
     showAlert("info", "Processing...", 5000);
 
@@ -226,7 +253,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
   private onSelectedItemRemove = (snippet: Template) => {
     const {
-      selectedType,
+      selectedItem,
       paragraphSnippets,
       templates,
       templatesWithVars,
@@ -234,41 +261,37 @@ class TemplateEditor extends React.Component<PropsType, State> {
       potentialTemplatesWithVars
     } = this.state;
 
-    if (!selectedType) {
+    if (!selectedItem) {
       return;
     }
 
+    const selectedType = selectedItem.type;
     const trigger = snippet.trigger;
 
-    if (selectedType === 'paragraph_snippets' && paragraphSnippets) {
+    if (selectedType === 'paragraphSnippet' && paragraphSnippets) {
       this.setState({
         paragraphSnippets: paragraphSnippets.slice().filter(s => s.trigger !== trigger),
-        selectedItem: undefined,
-        selectedType: undefined
+        selectedItem: undefined
       });
-    } else if (selectedType === 'templates' && templates) {
+    } else if (selectedType === 'template' && templates) {
       this.setState({
         templates: templates.slice().filter(s => s.trigger !== trigger),
-        selectedItem: undefined,
-        selectedType: undefined
+        selectedItem: undefined
       });
-    } else if (selectedType === 'templates_with_vars' && templatesWithVars) {
+    } else if (selectedType === 'templateWithVars' && templatesWithVars) {
       this.setState({
         templatesWithVars: templatesWithVars.slice().filter(s => s.trigger !== trigger),
-        selectedItem: undefined,
-        selectedType: undefined
+        selectedItem: undefined
       });
-    } else if (selectedType === 'potential_templates' && potentialTemplates) {
+    } else if (selectedType === 'potentialTemplate' && potentialTemplates) {
       this.setState({
         potentialTemplates: potentialTemplates.slice().filter(s => s.trigger !== trigger),
-        selectedItem: undefined,
-        selectedType: undefined
+        selectedItem: undefined
       });
-    } else if (selectedType === 'potential_templates_with_vars' && potentialTemplatesWithVars) {
+    } else if (selectedType === 'potentialTemplateWithVars' && potentialTemplatesWithVars) {
       this.setState({
         potentialTemplatesWithVars: potentialTemplatesWithVars.slice().filter(s => s.trigger !== trigger),
-        selectedItem: undefined,
-        selectedType: undefined
+        selectedItem: undefined
       });
     }
   }
@@ -282,6 +305,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
       potentialTemplates,
       potentialTemplatesWithVars,
       paragraphSnippets,
+      prometheusSnippets,
       selectedItem,
       loaded
     } = this.state;
@@ -308,6 +332,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
             potentialTemplates={potentialTemplates}
             potentialTemplatesWithVars={potentialTemplatesWithVars}
             paragraphSnippets={paragraphSnippets}
+            prometheusSnippets={prometheusSnippets}
             selectedItem={selectedItem}
             onItemSelected={this.onListItemSelected}
           />

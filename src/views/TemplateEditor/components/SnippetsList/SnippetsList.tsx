@@ -3,8 +3,7 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
 
-import { Template } from 'models/snippetGenerator';
-import { TemplateType } from 'api/snippetGenerator';
+import { Template, PrometheusTemplate } from 'models/templates';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -28,13 +27,18 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
+
   templatesWithVars?: Template[];
   templates?: Template[];
   potentialTemplatesWithVars?: Template[];
   potentialTemplates?: Template[];
   paragraphSnippets?: Template[];
+
+  prometheusSnippets?: PrometheusTemplate[];
+
   selectedItem?: Template;
-  onItemSelected: (item: Template, type: TemplateType) => void;
+
+  onItemSelected: (item: Template) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -53,12 +57,32 @@ class SnippetsList extends React.Component<PropsType, State> {
       potentialTemplatesWithVars,
       potentialTemplates,
       paragraphSnippets,
+      prometheusSnippets,
       selectedItem,
       onItemSelected
     } = this.props;
 
     return (
       <List className={clsx(classes.root, className)} subheader={<li />}>
+        <li key={`section-prometheusSnippets`} className={classes.listSection}>
+          <ul className={classes.ul}>
+            <ListSubheader className={classes.listSubheader}>{`Prometheus snippets`}</ListSubheader>
+            {prometheusSnippets && prometheusSnippets.map(i => (
+              <ListItem
+                button
+                key={i.trigger}
+                selected={i === selectedItem}
+                onClick={() => onItemSelected(i)}
+              >
+                <ListItemText
+                  primary={i.trigger}
+                  secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                />
+              </ListItem>
+            ))}
+          </ul>
+        </li>
+
         <li key={`section-templatesWithVars`} className={classes.listSection}>
           <ul className={classes.ul}>
             <ListSubheader className={classes.listSubheader}>{`Templates with vars`}</ListSubheader>
@@ -67,9 +91,12 @@ class SnippetsList extends React.Component<PropsType, State> {
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'templates_with_vars')}
+                onClick={() => onItemSelected(i)}
               >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
+                <ListItemText
+                  primary={i.trigger}
+                  secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                />
               </ListItem>
             ))}
           </ul>
@@ -83,9 +110,12 @@ class SnippetsList extends React.Component<PropsType, State> {
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'templates')}
+                onClick={() => onItemSelected(i)}
               >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
+                <ListItemText
+                  primary={i.trigger}
+                  secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                />
               </ListItem>
             ))}
           </ul>
@@ -99,9 +129,12 @@ class SnippetsList extends React.Component<PropsType, State> {
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'potential_templates_with_vars')}
+                onClick={() => onItemSelected(i)}
               >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
+                <ListItemText
+                  primary={i.trigger}
+                  secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                />
               </ListItem>
             ))}
           </ul>
@@ -115,9 +148,12 @@ class SnippetsList extends React.Component<PropsType, State> {
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'potential_templates')}
+                onClick={() => onItemSelected(i)}
               >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
+                <ListItemText
+                  primary={i.trigger}
+                  secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                />
               </ListItem>
             ))}
           </ul>
@@ -131,9 +167,12 @@ class SnippetsList extends React.Component<PropsType, State> {
                 button
                 key={i.trigger}
                 selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'paragraph_snippets')}
+                onClick={() => onItemSelected(i)}
               >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
+                <ListItemText
+                  primary={i.trigger}
+                  secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                />
               </ListItem>
             ))}
           </ul>
@@ -142,5 +181,12 @@ class SnippetsList extends React.Component<PropsType, State> {
     );
   }
 }
+
+const SnippetText: React.SFC<{ text: string }> = (props) => {
+  const { text } = props;
+  return (
+    <div>{text}</div>
+  );
+};
 
 export default withStyles(styles)(SnippetsList);

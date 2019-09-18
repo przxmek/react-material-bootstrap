@@ -4,7 +4,7 @@ import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteOutlined';
 import * as ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { PrometheusSnippet } from 'models/prometheus';
+import { PrometheusTemplate } from 'models/templates';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -23,10 +23,10 @@ const styles = (theme: Theme) => createStyles({
 });
 
 interface Props {
-  snippet: PrometheusSnippet;
-  onApply: (snippet: PrometheusSnippet, newText: string, newTrigger: string) => void;
-  onRemove: (snippet: PrometheusSnippet) => void;
-  onSave: (snippet: PrometheusSnippet, newText: string, newTrigger: string) => void;
+  snippet: PrometheusTemplate;
+  onApply: (snippet: PrometheusTemplate, newText: string, newTrigger: string) => void;
+  onRemove: (snippet: PrometheusTemplate) => void;
+  onSave: (snippet: PrometheusTemplate, newText: string, newTrigger: string) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;

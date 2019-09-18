@@ -1,12 +1,21 @@
-import { Theme, Button, TextField, Grid, TextareaAutosize, FormControlLabel, Checkbox, Box } from '@material-ui/core';
+import {
+  Theme,
+  Button,
+  TextField,
+  Grid,
+  TextareaAutosize,
+  FormControlLabel,
+  Checkbox,
+  Box
+} from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteOutlined';
-import { Template } from 'models/snippetGenerator';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import "quill-emoji";
 import "quill-emoji/dist/quill-emoji.css";
+import { Template } from 'models/templates';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -35,7 +44,7 @@ interface Props {
   snippet?: Template;
   onApply: (newText: string, newTrigger: string, snippet?: Template) => void;
   onRemove: (snippet: Template) => void;
-  onSave: (snippet: Template, newText: string, newTrigger: string) => void;
+  onSave: (newText: string, newTrigger: string, snippet?: Template) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -80,7 +89,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
 
     this.state = {
       htmlEditor: true,
-      text: props.snippet ? props.snippet.snippet : "",
+      text: props.snippet ? props.snippet.text : "",
       trigger: props.snippet ? props.snippet.trigger : "",
     };
   }
@@ -89,7 +98,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
     const { snippet } = this.props;
     if (snippet !== prevProps.snippet) {
       if (snippet) {
-        this.setState({ text: snippet.snippet, trigger: snippet.trigger });
+        this.setState({ text: snippet.text, trigger: snippet.trigger });
       } else {
         this.setState({ text: "", trigger: "" });
       }
@@ -182,8 +191,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
             <Button
               variant="contained"
               color="primary"
-              disabled={!snippet}
-              onClick={() => snippet && onSave(snippet, text, trigger)}
+              onClick={() => snippet && onSave(text, trigger, snippet)}
             >
               Save edits
             </Button>

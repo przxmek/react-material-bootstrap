@@ -5,8 +5,8 @@ import { RouteComponentProps } from 'react-router-dom';
 
 import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
 import { Loading } from 'components';
-import { PrometheusSnippet } from 'models/prometheus';
 import { fetchSnippets } from 'api/prometheus';
+import { PrometheusTemplate } from 'models/templates';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -25,8 +25,8 @@ interface PathParamsType {
 type PropsType = WithStyles<typeof styles> & RouteComponentProps<PathParamsType>;
 
 interface State {
-  snippets?: PrometheusSnippet[];
-  selectedItem?: PrometheusSnippet;
+  snippets?: PrometheusTemplate[];
+  selectedItem?: PrometheusTemplate;
 }
 
 class Prometheus extends React.Component<PropsType, State> {
@@ -48,7 +48,7 @@ class Prometheus extends React.Component<PropsType, State> {
     this.setState({ snippets });
   }
 
-  private onListItemSelected = (selectedItem: PrometheusSnippet) => {
+  private onListItemSelected = (selectedItem: PrometheusTemplate) => {
     this.setState({ selectedItem });
   }
 

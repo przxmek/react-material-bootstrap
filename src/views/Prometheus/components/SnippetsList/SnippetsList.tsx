@@ -2,8 +2,8 @@ import { Theme, List, ListSubheader, ListItem, ListItemText } from '@material-ui
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
+import { PrometheusTemplate } from 'models/templates';
 
-import { PrometheusSnippet } from 'models/prometheus';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -28,9 +28,9 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  snippets: PrometheusSnippet[];
-  selectedItem?: PrometheusSnippet;
-  onItemSelected: (item: PrometheusSnippet) => void;
+  snippets: PrometheusTemplate[];
+  selectedItem?: PrometheusTemplate;
+  onItemSelected: (item: PrometheusTemplate) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;

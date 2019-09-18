@@ -1,19 +1,19 @@
 const prod = {
-  API_URL: "/api",
+  API_URL: "https://admin.pointapi.com/api",
   SNIPPET_GENERATOR_URL: "https://snippet-generator.pointapi.com",
   SNIPPET_GENERATOR_USER: "point",
   SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
 };
 
 const dev = {
-  API_URL: "/api",
+  API_URL: "https://admin-dev.pointapi.com/api",
   SNIPPET_GENERATOR_URL: "https://dev-snippet-generator.pointapi.com",
   SNIPPET_GENERATOR_USER: "point",
   SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
 };
 
 const local = {
-  API_URL: "https://admin-dev.pointapi.com/api",
+  API_URL: "http://localhost:5000/api",
   SNIPPET_GENERATOR_URL: "https://dev-snippet-generator.pointapi.com",
   SNIPPET_GENERATOR_USER: "point",
   SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
