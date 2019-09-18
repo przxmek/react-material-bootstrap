@@ -72,7 +72,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     const response = await fetchTemplates(emailAddress);
 
-    if (response.result === "failure") {
+    if (response.status === "failure") {
       this.setState({ loaded: true });
       showAlert("error", `Failed to fetch templates: ${response.message}`, 10000);
     }
@@ -86,7 +86,8 @@ class TemplateEditor extends React.Component<PropsType, State> {
     showAlert("info", "Processing...", 5000);
 
     const response = await generateTemplates(emailAddress);
-    if (response.result === 'failure') {
+
+    if (response.status === 'failure') {
       this.setState({ loaded: true });
       showAlert('error', `Failed to generate templates: ${response.message}`, 10000);
       return;
