@@ -125,7 +125,7 @@ class SnippetsList extends React.Component<PropsType, State> {
 
         <li key={`section-snippets`} className={classes.listSection}>
           <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Paragraph Snippets`}</ListSubheader>
+            <ListSubheader className={classes.listSubheader}>{`Paragraph snippets`}</ListSubheader>
             {paragraphSnippets && paragraphSnippets.map(i => (
               <ListItem
                 button
