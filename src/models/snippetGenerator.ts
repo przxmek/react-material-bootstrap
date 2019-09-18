@@ -5,7 +5,7 @@ export interface TemplatesResponse {
   templates: Template[] | undefined;
   templates_with_vars: Template[] | undefined;
 
-  result?: "failure";
+  status?: "failure";
   message?: string;
 }
 

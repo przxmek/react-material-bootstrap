@@ -72,7 +72,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
     const response = await fetchTemplates(emailAddress);
 
-    if (response.result === "failure") {
+    if (response.status === "failure") {
       this.setState({ loaded: true });
       showAlert("error", `Failed to fetch templates: ${response.message}`, 10000);
     }
@@ -86,7 +86,8 @@ class TemplateEditor extends React.Component<PropsType, State> {
     showAlert("info", "Processing...", 5000);
 
     const response = await generateTemplates(emailAddress);
-    if (response.result === 'failure') {
+
+    if (response.status === 'failure') {
       this.setState({ loaded: true });
       showAlert('error', `Failed to generate templates: ${response.message}`, 10000);
       return;
@@ -199,12 +200,14 @@ class TemplateEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemApply = async (snippet: Template, text: string, trigger: string) => {
+  private onSelectedItemApply = async (text: string, trigger: string, snippet?: Template) => {
     const { emailAddress } = this.props.match.params;
 
-    this.onSelectedItemSave(snippet, text, trigger);
+    if (snippet) {
+      this.onSelectedItemSave(snippet, text, trigger);
+    }
 
-    const snippets = [snippet];
+    const snippets = snippet ? [snippet] : [{ trigger, snippet: text }];
 
     showAlert("info", "Processing...", 5000);
 
@@ -310,19 +313,12 @@ class TemplateEditor extends React.Component<PropsType, State> {
           />
 
           <Box flexGrow={1} className={classes.rightContent}>
-            {!selectedItem && (
-              <div className={classes.noItem}>
-                Select an item from the list first.
-              </div>
-            )}
-            {selectedItem && (
-              <RichTextEditor
-                snippet={selectedItem}
-                onApply={this.onSelectedItemApply}
-                onRemove={this.onSelectedItemRemove}
-                onSave={this.onSelectedItemSave}
-              />
-            )}
+            <RichTextEditor
+              snippet={selectedItem}
+              onApply={this.onSelectedItemApply}
+              onRemove={this.onSelectedItemRemove}
+              onSave={this.onSelectedItemSave}
+            />
           </Box>
 
         </Box>
