@@ -2,9 +2,11 @@ import { Theme, Button, TextField, Grid, TextareaAutosize, FormControlLabel, Che
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteOutlined';
-import * as ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 import { Template } from 'models/snippetGenerator';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import "quill-emoji";
+import "quill-emoji/dist/quill-emoji.css";
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -46,32 +48,35 @@ interface State {
 
 class RichTextEditor extends React.Component<PropsType, State> {
   private modules = {
-    toolbar: [
-      [{ 'header': '1' }, { 'header': '2' }],
-      [{ size: [] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' },
-      { 'indent': '-1' }, { 'indent': '+1' }],
-      ['link', 'image'],
-      ['clean']
-    ],
+    toolbar: {
+      container: [
+        [{ 'header': '1' }, { 'header': '2' }],
+        [{ size: [] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' },
+        { 'indent': '-1' }, { 'indent': '+1' }],
+        ['link', 'image', 'emoji'],
+        ['clean'],
+      ]
+    },
     clipboard: {
       // toggle to add extra line breaks when pasting HTML:
       matchVisual: false,
-    }
+    },
+    "emoji-toolbar": true,
+    "emoji-textarea": true,
+    "emoji-shortname": true,
   };
 
   private formats = [
     'header', 'size',
     'bold', 'italic', 'underline', 'strike', 'blockquote',
     'list', 'bullet', 'indent',
-    'link', 'image'
+    'link', 'image', 'emoji'
   ];
 
   constructor(props: PropsType) {
     super(props);
-
-
 
     this.state = {
       htmlEditor: true,
@@ -147,7 +152,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
         )}
 
         {htmlEditor && (
-          <ReactQuill.default
+          <ReactQuill
             value={text}
             onChange={this.onTextChange}
             modules={this.modules}
@@ -179,7 +184,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
               color="primary"
               disabled={!snippet}
               onClick={() => snippet && onSave(snippet, text, trigger)}
-              >
+            >
               Save edits
             </Button>
           </Grid>
