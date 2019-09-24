@@ -202,7 +202,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
 
   private onSelectedItemApply = async (text: string, trigger: string, snippet?: Template) => {
     const { emailAddress } = this.props.match.params;
-
+    text = text.replace(/<br>/g, '').replace(/<\/p><p>/g, '<br>').replace(/<p>|<\/p>/g, '');
     if (snippet) {
       this.onSelectedItemSave(snippet, text, trigger);
     }
