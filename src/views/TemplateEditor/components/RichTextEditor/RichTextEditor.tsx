@@ -73,8 +73,6 @@ class RichTextEditor extends React.Component<PropsType, State> {
       matchVisual: false,
     },
     "emoji-toolbar": true,
-    "emoji-textarea": true,
-    "emoji-shortname": true,
   };
 
   private formats = [
