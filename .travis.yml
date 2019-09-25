@@ -10,7 +10,8 @@ env:
 services:
   - docker
 notifications:
-  slack: pointapi:Sjvqcwm25jFhXxEdZirCDqRk
+  slack:
+    pointapi:Sjvqcwm25jFhXxEdZirCDqRk
 before_install:
   - npm i -g npm@6.9.0
   # set up awscli packages
