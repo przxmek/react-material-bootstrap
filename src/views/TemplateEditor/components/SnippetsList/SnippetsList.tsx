@@ -28,13 +28,18 @@ const styles = (theme: Theme) => createStyles({
 interface Props {
   className?: string;
 
-  templatesWithVars?: Template[];
-  templates?: Template[];
-  potentialTemplatesWithVars?: Template[];
-  potentialTemplates?: Template[];
-  paragraphSnippets?: Template[];
+  groups: Array<{
+    name: string;
+    items?: Template[];
+  }>;
 
-  prometheusSnippets?: PrometheusTemplate[];
+  // templatesWithVars?: Template[];
+  // templates?: Template[];
+  // potentialTemplatesWithVars?: Template[];
+  // potentialTemplates?: Template[];
+  // paragraphSnippets?: Template[];
+
+  // prometheusSnippets?: PrometheusTemplate[];
 
   selectedItem?: Template;
 
@@ -52,19 +57,40 @@ class SnippetsList extends React.Component<PropsType, State> {
     const {
       classes,
       className,
-      templatesWithVars,
-      templates,
-      potentialTemplatesWithVars,
-      potentialTemplates,
-      paragraphSnippets,
-      prometheusSnippets,
+      // templatesWithVars,
+      // templates,
+      // potentialTemplatesWithVars,
+      // potentialTemplates,
+      // paragraphSnippets,
+      // prometheusSnippets,
+      groups,
       selectedItem,
       onItemSelected
     } = this.props;
 
     return (
       <List className={clsx(classes.root, className)} subheader={<li />}>
-        <li key={`section-prometheusSnippets`} className={classes.listSection}>
+        {groups.map(group => (
+          <li key={`section-${group.name}`} className={classes.listSection}>
+            <ul className={classes.ul}>
+              <ListSubheader className={classes.listSubheader}>{group.name}</ListSubheader>
+              {group.items && group.items.map(i => (
+                <ListItem
+                  button
+                  key={i.trigger}
+                  selected={i === selectedItem}
+                  onClick={() => onItemSelected(i)}
+                >
+                  <ListItemText
+                    primary={i.trigger}
+                    secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                  />
+                </ListItem>
+              ))}
+            </ul>
+          </li>
+        ))}
+        {/* <li key={`section-prometheusSnippets`} className={classes.listSection}>
           <ul className={classes.ul}>
             <ListSubheader className={classes.listSubheader}>{`Prometheus snippets`}</ListSubheader>
             {prometheusSnippets && prometheusSnippets.map(i => (
@@ -176,7 +202,7 @@ class SnippetsList extends React.Component<PropsType, State> {
               </ListItem>
             ))}
           </ul>
-        </li>
+        </li> */}
       </List>
     );
   }
