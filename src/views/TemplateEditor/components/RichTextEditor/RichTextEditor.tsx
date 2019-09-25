@@ -111,8 +111,20 @@ class RichTextEditor extends React.Component<PropsType, State> {
     this.setState({ trigger });
   }
 
+  private onApply = () => {
+    const { snippet, onApply } = this.props;
+    const { text, trigger } = this.state;
+
+    const formatted = text
+      .replace(/<br>/g, '')
+      .replace(/<\/p><p>/g, '<br>')
+      .replace(/<p>|<\/p>/g, '');
+
+    onApply(formatted, trigger, snippet);
+  }
+
   public render() {
-    const { classes, onApply, onRemove, onSave, snippet } = this.props;
+    const { classes, onRemove, onSave, snippet } = this.props;
     const { text, trigger, htmlEditor } = this.state;
 
     return (
@@ -181,7 +193,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
           </Grid>
           <Grid item xs></Grid>
           <Grid item>
-            <Button variant="outlined" onClick={() => onApply(text, trigger, snippet)}>
+            <Button variant="outlined" onClick={() => this.onApply()}>
               Apply to profile
             </Button>
           </Grid>
