@@ -6,7 +6,6 @@ import { Loading, showAlert } from 'components';
 import { Template, PrometheusTemplate } from 'models/templates';
 import { fetchSnippets, createOrUpdateSnippet, deleteSnippet } from 'api/prometheus';
 
-
 const styles = (theme: Theme) => createStyles({
   root: {
     padding: theme.spacing(3),
@@ -128,7 +127,7 @@ class PrometheusEditor extends React.Component<PropsType, State> {
 
     // Update Prometheus
     try {
-      const response = await createOrUpdateSnippet(emailAddress, snippet);
+      await createOrUpdateSnippet(emailAddress, snippet);
       showAlert("success", `Snippet '${trigger}' updated!`);
     } catch (e) {
       showAlert("error", e.message, 10000);

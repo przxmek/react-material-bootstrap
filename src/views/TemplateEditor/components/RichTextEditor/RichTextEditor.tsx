@@ -16,7 +16,6 @@ import 'react-quill/dist/quill.snow.css';
 import "quill-emoji";
 import "quill-emoji/dist/quill-emoji.css";
 import { Template } from 'models/templates';
-import { returnStatement } from '@babel/types';
 
 const styles = (theme: Theme) => createStyles({
   root: {
