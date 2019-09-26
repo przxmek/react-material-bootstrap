@@ -16,6 +16,7 @@ import 'react-quill/dist/quill.snow.css';
 import "quill-emoji";
 import "quill-emoji/dist/quill-emoji.css";
 import { Template } from 'models/templates';
+import { returnStatement } from '@babel/types';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -42,9 +43,9 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   snippet?: Template;
-  onApply: (newText: string, newTrigger: string, snippet?: Template) => void;
+  onApply?: (text: string, trigger: string, labels?: string[]) => void;
   onRemove: (snippet: Template) => void;
-  onSave: (newText: string, newTrigger: string, snippet?: Template) => void;
+  onSave: (text: string, trigger: string, labels?: string[]) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -111,20 +112,37 @@ class RichTextEditor extends React.Component<PropsType, State> {
     this.setState({ trigger });
   }
 
-  private onApply = () => {
-    const { snippet, onApply } = this.props;
-    const { text, trigger } = this.state;
-
-    const formatted = text
+  private reformatText = (htmlText: string) => {
+    return htmlText
       .replace(/<br>/g, '')
       .replace(/<\/p><p>/g, '<br>')
       .replace(/<p>|<\/p>/g, '');
+  }
 
-    onApply(formatted, trigger, snippet);
+  private onSave = () => {
+    const { onSave } = this.props;
+    const { text, trigger } = this.state;
+
+    const formatted = this.reformatText(text);
+
+    onSave(formatted, trigger);
+  }
+
+  private onApply = () => {
+    const { onApply } = this.props;
+    const { text, trigger } = this.state;
+
+    if (!onApply) {
+      return;
+    }
+
+    const formatted = this.reformatText(text);
+
+    onApply(formatted, trigger);
   }
 
   public render() {
-    const { classes, onRemove, onSave, snippet } = this.props;
+    const { classes, onRemove, onApply, snippet } = this.props;
     const { text, trigger, htmlEditor } = this.state;
 
     return (
@@ -192,16 +210,18 @@ class RichTextEditor extends React.Component<PropsType, State> {
             </Button>
           </Grid>
           <Grid item xs></Grid>
-          <Grid item>
-            <Button variant="outlined" onClick={() => this.onApply()}>
-              Apply to profile
-            </Button>
-          </Grid>
+          {onApply && (
+            <Grid item>
+              <Button variant="outlined" onClick={() => this.onApply()}>
+                Apply to profile
+              </Button>
+            </Grid>
+          )}
           <Grid item>
             <Button
               variant="contained"
               color="primary"
-              onClick={() => snippet && onSave(text, trigger, snippet)}
+              onClick={() => this.onSave()}
             >
               Save edits
             </Button>

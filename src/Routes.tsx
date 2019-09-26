@@ -11,7 +11,6 @@ import {
   Icons as IconsView,
   NotFound as NotFoundView,
   ProductList as ProductListView,
-  Prometheus as PrometheusView,
   Settings as SettingsView,
   SignIn as SignInView,
   SignUp as SignUpView,
@@ -51,12 +50,6 @@ const Routes = () => {
         exact
         layout={MainLayout}
         path="/products"
-      />
-      <RouteWithLayout
-        component={PrometheusView}
-        exact
-        layout={MainLayout}
-        path="/prometheus/:emailAddress"
       />
       <RouteWithLayout
         component={TypographyView}

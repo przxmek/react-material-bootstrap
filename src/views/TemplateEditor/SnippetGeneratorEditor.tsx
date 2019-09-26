@@ -155,72 +155,68 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemSave = (newText: string, newTrigger: string, template?: Template) => {
+  private onSelectedItemSave = (newText: string, newTrigger: string) => {
     const { selectedItem } = this.state;
 
 
-    if (!selectedItem && !template) {
+    if (!selectedItem) {
       // TODO save new custom template
       return;
-    }
+    } else {
 
-    if (!selectedItem || !template) {
-      return;
-    }
+      const selectedType = selectedItem.type;
 
-    const selectedType = selectedItem.type;
+      if (selectedType === "paragraphSnippet" && this.state.paragraphSnippets) {
+        const paragraphSnippets = this.state.paragraphSnippets.slice();
+        const idx = paragraphSnippets.indexOf(selectedItem);
 
-    if (selectedType === "paragraphSnippet" && this.state.paragraphSnippets) {
-      const paragraphSnippets = this.state.paragraphSnippets.slice();
-      const idx = paragraphSnippets.indexOf(template);
+        paragraphSnippets[idx].text = newText;
+        paragraphSnippets[idx].trigger = newTrigger;
 
-      paragraphSnippets[idx].text = newText;
-      paragraphSnippets[idx].trigger = newTrigger;
+        this.setState({ paragraphSnippets });
+      } else if (selectedType === "template" && this.state.templates) {
+        const templates = this.state.templates.slice();
+        const idx = templates.indexOf(selectedItem);
 
-      this.setState({ paragraphSnippets });
-    } else if (selectedType === "template" && this.state.templates) {
-      const templates = this.state.templates.slice();
-      const idx = templates.indexOf(template);
+        templates[idx].text = newText;
+        templates[idx].trigger = newTrigger;
 
-      templates[idx].text = newText;
-      templates[idx].trigger = newTrigger;
+        this.setState({ templates });
+      } else if (selectedType === "templateWithVars" && this.state.templatesWithVars) {
+        const templatesWithVars = this.state.templatesWithVars.slice();
+        const idx = templatesWithVars.indexOf(selectedItem);
 
-      this.setState({ templates });
-    } else if (selectedType === "templateWithVars" && this.state.templatesWithVars) {
-      const templatesWithVars = this.state.templatesWithVars.slice();
-      const idx = templatesWithVars.indexOf(template);
+        templatesWithVars[idx].text = newText;
+        templatesWithVars[idx].trigger = newTrigger;
 
-      templatesWithVars[idx].text = newText;
-      templatesWithVars[idx].trigger = newTrigger;
+        this.setState({ templatesWithVars });
+      } else if (selectedType === "potentialTemplate" && this.state.potentialTemplates) {
+        const potentialTemplates = this.state.potentialTemplates.slice();
+        const idx = potentialTemplates.indexOf(selectedItem);
 
-      this.setState({ templatesWithVars });
-    } else if (selectedType === "potentialTemplate" && this.state.potentialTemplates) {
-      const potentialTemplates = this.state.potentialTemplates.slice();
-      const idx = potentialTemplates.indexOf(template);
+        potentialTemplates[idx].text = newText;
+        potentialTemplates[idx].trigger = newTrigger;
 
-      potentialTemplates[idx].text = newText;
-      potentialTemplates[idx].trigger = newTrigger;
+        this.setState({ potentialTemplates });
+      } else if (selectedType === "potentialTemplateWithVars" && this.state.potentialTemplatesWithVars) {
+        const potentialTemplatesWithVars = this.state.potentialTemplatesWithVars.slice();
+        const idx = potentialTemplatesWithVars.indexOf(selectedItem);
 
-      this.setState({ potentialTemplates });
-    } else if (selectedType === "potentialTemplateWithVars" && this.state.potentialTemplatesWithVars) {
-      const potentialTemplatesWithVars = this.state.potentialTemplatesWithVars.slice();
-      const idx = potentialTemplatesWithVars.indexOf(template);
+        potentialTemplatesWithVars[idx].text = newText;
+        potentialTemplatesWithVars[idx].trigger = newTrigger;
 
-      potentialTemplatesWithVars[idx].text = newText;
-      potentialTemplatesWithVars[idx].trigger = newTrigger;
-
-      this.setState({ potentialTemplatesWithVars });
+        this.setState({ potentialTemplatesWithVars });
+      }
     }
   }
 
-  private onSelectedItemApply = async (text: string, trigger: string, snippet?: Template) => {
+  private onSelectedItemApply = async (text: string, trigger: string) => {
     const { emailAddress } = this.props;
+    const { selectedItem } = this.state;
 
-    if (snippet) {
-      this.onSelectedItemSave(text, trigger, snippet);
-    }
+    this.onSelectedItemSave(text, trigger);
 
-    const snippets = snippet ? [snippet] : [{ trigger, text }];
+    const snippets = selectedItem ? [selectedItem] : [{ trigger, text }];
 
     showAlert("info", "Processing...", 5000);
 
@@ -326,9 +322,9 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
           <Box flexGrow={1} className={classes.rightContent}>
             <RichTextEditor
               snippet={selectedItem}
-              onApply={this.onSelectedItemApply}
               onRemove={this.onSelectedItemRemove}
-              onSave={this.onSelectedItemSave}
+              onApply={this.onSelectedItemApply}
+              onSave={this.onSelectedItemApply}
             />
           </Box>
 

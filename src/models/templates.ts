@@ -6,14 +6,14 @@ export interface Template {
 }
 
 export interface PrometheusTemplate extends Template {
-  blacklisted: boolean;
-  chosen_frequency: number;
-  date_created: number;
-  id_: number;
+  blacklisted?: boolean;
+  chosen_frequency?: number;
+  date_created?: number;
+  id_?: Readonly<string>;
   labels: string[];
-  last_updated: number;
-  type_: "custom" | "generated";
-  variables: any[];
+  last_updated?: number;
+  type_?: "custom" | "generated";
+  variables?: any[];
 }
 
 export type TemplateType =

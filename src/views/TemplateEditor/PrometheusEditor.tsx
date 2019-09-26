@@ -4,7 +4,7 @@ import React from 'react';
 import { SnippetsList, RichTextEditor } from './components';
 import { Loading, showAlert } from 'components';
 import { Template, PrometheusTemplate } from 'models/templates';
-import { fetchSnippets } from 'api/prometheus';
+import { fetchSnippets, createOrUpdateSnippet, deleteSnippet } from 'api/prometheus';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -36,9 +36,7 @@ type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
   prometheusSnippets?: PrometheusTemplate[];
-
-  selectedItem?: Template;
-
+  selectedItem?: PrometheusTemplate;
   loaded: boolean;
 }
 
@@ -56,16 +54,15 @@ class PrometheusEditor extends React.Component<PropsType, State> {
   }
 
   public componentDidMount = async () => {
-    const { emailAddress } = this.props;
-
-    this.loadPrometheusData(emailAddress);
+    this.loadPrometheusData();
   }
 
-  private loadPrometheusData = async (emailAddress: string) => {
+  private loadPrometheusData = async () => {
+    const { emailAddress } = this.props;
+
     try {
       const response = await fetchSnippets(emailAddress);
       const prometheusSnippets = [...response.custom, ...response.generated];
-
       this.setState({ loaded: true, prometheusSnippets });
     } catch (e) {
       showAlert("error", e.message, 10000);
@@ -74,77 +71,106 @@ class PrometheusEditor extends React.Component<PropsType, State> {
   }
 
   private onListItemSelected = (item: Template) => {
-    this.setState({ selectedItem: item });
+    this.setState({ selectedItem: item as PrometheusTemplate });
   }
 
-  private onSelectedItemSave = (newText: string, newTrigger: string, template?: Template) => {
-    const { selectedItem } = this.state;
-
-
-    if (!selectedItem && !template) {
-      // TODO save new custom template
-      return;
-    }
-
-    if (!selectedItem || !template) {
-      return;
-    }
-
-    const selectedType = selectedItem.type;
-
-    if (selectedType === "prometheusSnippet" && this.state.prometheusSnippets) {
-      const prometheusSnippets = this.state.prometheusSnippets.slice();
-      const idx = prometheusSnippets.indexOf(template as PrometheusTemplate);
-
-      prometheusSnippets[idx].text = newText;
-      prometheusSnippets[idx].trigger = newTrigger;
-
-      this.setState({ prometheusSnippets });
-    }
-  }
-
-  private onSelectedItemApply = async (text: string, trigger: string, snippet?: Template) => {
+  private createSnippet = async (text: string, trigger: string, labels?: string[]) => {
     const { emailAddress } = this.props;
+    const { prometheusSnippets } = this.state;
 
-    if (snippet) {
-      this.onSelectedItemSave(text, trigger, snippet);
+    try {
+      const snippet: PrometheusTemplate = {
+        type: 'prometheusSnippet',
+        text,
+        trigger,
+        labels: labels ? labels : [],
+      };
+
+      const newSnippet = await createOrUpdateSnippet(emailAddress, snippet);
+
+      const newPrometheusSnippets: PrometheusTemplate[] =
+        prometheusSnippets ? prometheusSnippets.slice() : [];
+
+      newPrometheusSnippets.unshift(newSnippet);
+
+      this.setState({
+        prometheusSnippets: newPrometheusSnippets,
+        selectedItem: newSnippet
+      });
+
+      showAlert("success", `Snippet '${trigger}' created!`);
+    } catch (e) {
+      showAlert("error", e.message, 10000);
+      this.loadPrometheusData();
+    }
+  }
+
+  private updateSnippet = async (text: string, trigger: string, labels?: string[]) => {
+    const { emailAddress } = this.props;
+    const { selectedItem, prometheusSnippets } = this.state;
+
+    if (!selectedItem || !prometheusSnippets) {
+      showAlert("error", "Something went wrong when saving 😫", 10000);
+      return;
     }
 
-    const snippets = snippet ? [snippet] : [{ trigger, text }];
+    const newPrometheusSnippets = prometheusSnippets.slice();
+    const idx = newPrometheusSnippets.indexOf(selectedItem);
+    const snippet = newPrometheusSnippets[idx];
+
+    newPrometheusSnippets[idx].trigger = trigger;
+    newPrometheusSnippets[idx].text = text;
+    if (labels) {
+      newPrometheusSnippets[idx].labels = labels;
+    }
+
+    this.setState({ prometheusSnippets: newPrometheusSnippets });
+
+    // Update Prometheus
+    try {
+      const response = await createOrUpdateSnippet(emailAddress, snippet);
+      showAlert("success", `Snippet '${trigger}' updated!`);
+    } catch (e) {
+      showAlert("error", e.message, 10000);
+      this.loadPrometheusData();
+    }
+  }
+
+  private onSave = async (text: string, trigger: string, labels?: string[]) => {
+    const { selectedItem } = this.state;
 
     showAlert("info", "Processing...", 5000);
 
-    // const response = await applySnippets(emailAddress, snippets);
-    // if (response.status === 'failure') {
-    //   showAlert("error", `Failed to apply snippet: ${response.message}`, 30000);
-    // } else {
-    //   const status = response.result[0].status;
-    //   if (status === 'added') {
-    //     showAlert("success", "Snippet added to Prometheus profile", 5000);
-    //   } else {
-    //     showAlert("error", `Failed to apply snippet: ${status}`, 30000);
-    //   }
-    // }
+    if (!selectedItem) {
+      await this.createSnippet(text, trigger, labels);
+    } else {
+      await this.updateSnippet(text, trigger, labels);
+    }
   }
 
-  private onSelectedItemRemove = (snippet: Template) => {
-    const {
-      selectedItem,
-      prometheusSnippets
-    } = this.state;
+  private onSelectedItemRemove = async () => {
+    const { emailAddress } = this.props;
+    const { selectedItem, prometheusSnippets } = this.state;
 
-    if (!selectedItem) {
+    if (!selectedItem || !selectedItem.id_ || !prometheusSnippets) {
+      showAlert("error", "Something went wrong when removing 😫", 10000);
       return;
     }
 
-    const selectedType = selectedItem.type;
-    const trigger = snippet.trigger;
+    showAlert("info", "Deleting...", 5000);
 
-    if (selectedType === 'prometheusSnippet' && prometheusSnippets) {
-      this.setState({
-        prometheusSnippets: prometheusSnippets.slice().filter(s => s.trigger !== trigger),
-        selectedItem: undefined
-      });
+    this.setState({
+      prometheusSnippets: prometheusSnippets.slice().filter(s => s.trigger !== selectedItem.trigger),
+      selectedItem: undefined
+    });
+
+    try {
+      // Update Prometheus
+      await deleteSnippet(emailAddress, selectedItem.id_);
+      showAlert("success", `Snippet '${selectedItem.trigger}' deleted!`);
+    } catch (e) {
+      showAlert("error", e.message, 10000);
+      this.loadPrometheusData();
     }
   }
 
@@ -168,7 +194,7 @@ class PrometheusEditor extends React.Component<PropsType, State> {
           className={classes.content}
         >
           <SnippetsList
-            groups={[{name: 'Prometheus snippets', items: prometheusSnippets}]}
+            groups={[{ name: 'Prometheus snippets', items: prometheusSnippets }]}
             selectedItem={selectedItem}
             onItemSelected={this.onListItemSelected}
           />
@@ -176,9 +202,8 @@ class PrometheusEditor extends React.Component<PropsType, State> {
           <Box flexGrow={1} className={classes.rightContent}>
             <RichTextEditor
               snippet={selectedItem}
-              onApply={this.onSelectedItemApply}
               onRemove={this.onSelectedItemRemove}
-              onSave={this.onSelectedItemSave}
+              onSave={this.onSave}
             />
           </Box>
 
