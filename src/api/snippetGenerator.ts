@@ -198,7 +198,8 @@ function wrapIntoObject(
     score,
     text: newLineToBrElement(escapeTags(text)),
     trigger,
-    type: convertType(type)
+    type: convertType(type),
+    labels: [],
   };
 }
 

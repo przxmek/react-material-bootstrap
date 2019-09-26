@@ -3,6 +3,7 @@ export interface Template {
   text: string;
   trigger: string;
   type: TemplateType;
+  labels: string[];
 }
 
 export interface PrometheusTemplate extends Template {
@@ -10,7 +11,6 @@ export interface PrometheusTemplate extends Template {
   chosen_frequency?: number;
   date_created?: number;
   id_?: Readonly<string>;
-  labels: string[];
   last_updated?: number;
   type_?: "custom" | "generated";
   variables?: any[];

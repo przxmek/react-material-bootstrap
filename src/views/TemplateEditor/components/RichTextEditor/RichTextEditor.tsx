@@ -16,6 +16,7 @@ import 'react-quill/dist/quill.snow.css';
 import "quill-emoji";
 import "quill-emoji/dist/quill-emoji.css";
 import { Template } from 'models/templates';
+import ChipsArray from './ChipsArray';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -42,9 +43,9 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   snippet?: Template;
-  onApply?: (text: string, trigger: string, labels?: string[]) => void;
+  onApply?: (text: string, trigger: string, labels: string[]) => void;
   onRemove: (snippet: Template) => void;
-  onSave: (text: string, trigger: string, labels?: string[]) => void;
+  onSave: (text: string, trigger: string, labels: string[]) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -53,6 +54,7 @@ interface State {
   htmlEditor: boolean;
   text: string;
   trigger: string;
+  labels: string[];
 }
 
 class RichTextEditor extends React.Component<PropsType, State> {
@@ -89,6 +91,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
       htmlEditor: true,
       text: props.snippet ? props.snippet.text : "",
       trigger: props.snippet ? props.snippet.trigger : "",
+      labels: props.snippet ? props.snippet.labels : []
     };
   }
 
@@ -96,7 +99,11 @@ class RichTextEditor extends React.Component<PropsType, State> {
     const { snippet } = this.props;
     if (snippet !== prevProps.snippet) {
       if (snippet) {
-        this.setState({ text: snippet.text, trigger: snippet.trigger });
+        this.setState({
+          text: snippet.text,
+          trigger: snippet.trigger,
+          labels: snippet && (snippet as any).labels ? (snippet as any).labels : undefined
+        });
       } else {
         this.setState({ text: "", trigger: "" });
       }
@@ -111,6 +118,26 @@ class RichTextEditor extends React.Component<PropsType, State> {
     this.setState({ trigger });
   }
 
+  private onDeleteLabel = (label: string) => {
+    if (!this.state.labels) {
+      return;
+    }
+
+    const labels = this.state.labels.filter(l => l !== label);
+    this.setState({ labels });
+  }
+
+  private onSaveNewLabel = (label: string) => {
+    if (!this.state.labels) {
+      return;
+    }
+
+    const labels = this.state.labels.slice();
+    labels.push(label);
+
+    this.setState({ labels });
+  }
+
   private reformatText = (htmlText: string) => {
     return htmlText
       .replace(/<br>/g, '')
@@ -120,16 +147,16 @@ class RichTextEditor extends React.Component<PropsType, State> {
 
   private onSave = () => {
     const { onSave } = this.props;
-    const { text, trigger } = this.state;
+    const { text, trigger, labels } = this.state;
 
     const formatted = this.reformatText(text);
 
-    onSave(formatted, trigger);
+    onSave(formatted, trigger, labels);
   }
 
   private onApply = () => {
     const { onApply } = this.props;
-    const { text, trigger } = this.state;
+    const { text, trigger, labels } = this.state;
 
     if (!onApply) {
       return;
@@ -137,12 +164,12 @@ class RichTextEditor extends React.Component<PropsType, State> {
 
     const formatted = this.reformatText(text);
 
-    onApply(formatted, trigger);
+    onApply(formatted, trigger, labels);
   }
 
   public render() {
     const { classes, onRemove, onApply, snippet } = this.props;
-    const { text, trigger, htmlEditor } = this.state;
+    const { text, trigger, labels, htmlEditor } = this.state;
 
     return (
       <Box
@@ -162,6 +189,15 @@ class RichTextEditor extends React.Component<PropsType, State> {
             shrink: true,
           }}
         />
+
+        {labels && (<>
+          <ChipsArray
+            data={labels}
+            handleDelete={this.onDeleteLabel}
+            handleSaveNewLabel={this.onSaveNewLabel}
+          />
+        </>
+        )}
 
         <FormControlLabel
           label="HTML Editor"

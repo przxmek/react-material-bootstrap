@@ -73,7 +73,7 @@ class PrometheusEditor extends React.Component<PropsType, State> {
     this.setState({ selectedItem: item as PrometheusTemplate });
   }
 
-  private createSnippet = async (text: string, trigger: string, labels?: string[]) => {
+  private createSnippet = async (text: string, trigger: string, labels: string[]) => {
     const { emailAddress } = this.props;
     const { prometheusSnippets } = this.state;
 
@@ -82,7 +82,7 @@ class PrometheusEditor extends React.Component<PropsType, State> {
         type: 'prometheusSnippet',
         text,
         trigger,
-        labels: labels ? labels : [],
+        labels,
       };
 
       const newSnippet = await createOrUpdateSnippet(emailAddress, snippet);
@@ -104,7 +104,7 @@ class PrometheusEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private updateSnippet = async (text: string, trigger: string, labels?: string[]) => {
+  private updateSnippet = async (text: string, trigger: string, labels: string[]) => {
     const { emailAddress } = this.props;
     const { selectedItem, prometheusSnippets } = this.state;
 
@@ -119,9 +119,7 @@ class PrometheusEditor extends React.Component<PropsType, State> {
 
     newPrometheusSnippets[idx].trigger = trigger;
     newPrometheusSnippets[idx].text = text;
-    if (labels) {
-      newPrometheusSnippets[idx].labels = labels;
-    }
+    newPrometheusSnippets[idx].labels = labels;
 
     this.setState({ prometheusSnippets: newPrometheusSnippets });
 
@@ -135,7 +133,7 @@ class PrometheusEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSave = async (text: string, trigger: string, labels?: string[]) => {
+  private onSave = async (text: string, trigger: string, labels: string[]) => {
     const { selectedItem } = this.state;
 
     showAlert("info", "Processing...", 5000);
