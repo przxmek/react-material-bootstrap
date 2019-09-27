@@ -9,7 +9,8 @@ import {
 import { SnippetsList, TemplateEditorToolbar, RichTextEditor } from './components';
 import { Loading, showAlert } from 'components';
 import { TemplatesResponse } from 'models/snippetGenerator';
-import { Template } from 'models/templates';
+import { Template, PrometheusTemplate } from 'models/templates';
+import { createOrUpdateSnippet } from 'api/prometheus';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -155,9 +156,8 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
     }
   }
 
-  private onSelectedItemSave = (newText: string, newTrigger: string) => {
+  private onSelectedItemSave = (newText: string, newTrigger: string, labels: string[]) => {
     const { selectedItem } = this.state;
-
 
     if (!selectedItem) {
       // TODO save new custom template
@@ -172,6 +172,7 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
 
         paragraphSnippets[idx].text = newText;
         paragraphSnippets[idx].trigger = newTrigger;
+        paragraphSnippets[idx].labels = labels;
 
         this.setState({ paragraphSnippets });
       } else if (selectedType === "template" && this.state.templates) {
@@ -180,6 +181,7 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
 
         templates[idx].text = newText;
         templates[idx].trigger = newTrigger;
+        templates[idx].labels = labels;
 
         this.setState({ templates });
       } else if (selectedType === "templateWithVars" && this.state.templatesWithVars) {
@@ -188,6 +190,7 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
 
         templatesWithVars[idx].text = newText;
         templatesWithVars[idx].trigger = newTrigger;
+        templatesWithVars[idx].labels = labels;
 
         this.setState({ templatesWithVars });
       } else if (selectedType === "potentialTemplate" && this.state.potentialTemplates) {
@@ -196,6 +199,7 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
 
         potentialTemplates[idx].text = newText;
         potentialTemplates[idx].trigger = newTrigger;
+        potentialTemplates[idx].labels = labels;
 
         this.setState({ potentialTemplates });
       } else if (selectedType === "potentialTemplateWithVars" && this.state.potentialTemplatesWithVars) {
@@ -204,32 +208,35 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
 
         potentialTemplatesWithVars[idx].text = newText;
         potentialTemplatesWithVars[idx].trigger = newTrigger;
+        potentialTemplatesWithVars[idx].labels = labels;
 
         this.setState({ potentialTemplatesWithVars });
       }
     }
   }
 
-  private onSelectedItemApply = async (text: string, trigger: string) => {
+  private onSelectedItemApply = async (text: string, trigger: string, labels: string[]) => {
     const { emailAddress } = this.props;
-    const { selectedItem } = this.state;
-
-    this.onSelectedItemSave(text, trigger);
-
-    const snippets = selectedItem ? [selectedItem] : [{ trigger, text }];
 
     showAlert("info", "Processing...", 5000);
 
-    const response = await applySnippets(emailAddress, snippets);
-    if (response.status === 'failure') {
-      showAlert("error", `Failed to apply snippet: ${response.message}`, 30000);
-    } else {
-      const status = response.result[0].status;
-      if (status === 'added') {
-        showAlert("success", "Snippet added to Prometheus profile", 5000);
-      } else {
-        showAlert("error", `Failed to apply snippet: ${status}`, 30000);
-      }
+    // Save changes locally
+    this.onSelectedItemSave(text, trigger, labels);
+
+    try {
+      const snippet: PrometheusTemplate = {
+        type: 'prometheusSnippet',
+        text,
+        trigger,
+        labels,
+      };
+
+      // Save to Prometheus
+      await createOrUpdateSnippet(emailAddress, snippet);
+
+      showAlert("success", `Snippet '${trigger}' created! You'll see it now in Prometheus tab.`);
+    } catch (e) {
+      showAlert("error", e.message, 10000);
     }
   }
 
@@ -324,7 +331,7 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
               snippet={selectedItem}
               onRemove={this.onSelectedItemRemove}
               onApply={this.onSelectedItemApply}
-              onSave={this.onSelectedItemApply}
+              onSave={this.onSelectedItemSave}
             />
           </Box>
 
