@@ -21,13 +21,8 @@ import {
 } from '@material-ui/core';
 import CreateIcon from '@material-ui/icons/Create';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
-
-
 import User from 'models/user';
 import { RouteComponentProps, withRouter } from 'react-router';
-import Contact from 'models/mailjet/contact';
-import { changeContactStage } from 'api/mailjet';
-import { showAlert } from 'components';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -64,9 +59,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  contacts?: Contact[];
   onChangeSelectedUsers: (users: string[]) => void;
-  onMailjetUpdate: () => Promise<void>;
   onUserActivate: (user: User) => void;
   searchText: string;
   users: User[];
@@ -198,124 +191,9 @@ class UsersTable extends React.Component<PropsType, State> {
     this.setPage(0);
   }
 
-  private getContact = (emailAddress: string): Contact | undefined => {
-    const { contacts } = this.props;
-    if (!contacts) {
-      return undefined;
-    }
-
-    const filtered = contacts.filter(c => c.Email === emailAddress);
-    if (filtered.length > 0) {
-      return filtered[0];
-    } else {
-      return undefined;
-    }
-  }
-
-  private getContactStage = (contact: Contact): string | undefined => {
-    const filtered = contact.Properties.filter(p => p.Name === 'stage');
-    if (filtered.length > 0) {
-      return filtered[0].Value;
-    } else {
-      return undefined;
-    }
-  }
-
-  private changeMailjetStage = async (emailAddress: string, stage: string) => {
-    const { onMailjetUpdate } = this.props;
-
-    showAlert("info", "Processing...", 5000);
-
-    await changeContactStage(emailAddress, stage);
-
-    await onMailjetUpdate();
-
-    showAlert("success", "Mailjet stage changed.", 5000);
-  }
-
-  /**
-   * Stages:
-   * - new_signup
-   * - onboarding
-   * - delay_onboarding 
-   * - no_survey_results 
-   * - scheduling_onboarding
-   * - onboarding_scheduled
-   * - no_scheduled_meeting
-   * 
-   * Transitions:
-   * - new_signup -> onboarding; delay_onboarding
-   * - onboarding -> delay_onboarding; no_survey_results; scheduling_onboarding
-   * - delay_onboarding -> onboarding
-   * - no_survey_results -> X
-   * - scheduling_onboarding -> onboarding_scheduled; no_scheduled_meeting
-   * - onboarding_scheduled -> X
-   * - no_scheduled_meeting -> X
-   */
-  private renderMailjetStageButtons(emailAddress: string) {
-    const { classes } = this.props;
-
-    const transitions = {
-      new_signup: ['onboarding', 'delay_onboarding'],
-      onboarding: ['delay_onboarding', 'no_survey_results', 'scheduling_onboarding'],
-      delay_onboarding: ['onboarding'],
-      no_survey_results: [],
-      scheduling_onboarding: ['onboarding_scheduled', 'no_scheduled_meeting'],
-      onboarding_scheduled: [],
-      no_scheduled_meeting: [],
-    };
-
-    if (!this.props.contacts) {
-      return;
-    }
-
-    const contact = this.getContact(emailAddress);
-    if (!contact) {
-      return (
-        <Button disabled variant="text" size="small">
-          Missing Mailjet Contact
-        </Button>
-      );
-    }
-
-    const contactStage = this.getContactStage(contact);
-    if (!contactStage) {
-      return (
-        <Button disabled variant="text" size="small">
-          Mailjet contact missing 'stage' property
-        </Button>
-      );
-    }
-
-    if (!(contactStage in transitions)) {
-      return (
-        <Button disabled variant="text" size="small">
-          Unknown Mailjet stage: {contactStage}
-        </Button>
-      );
-    }
-
-    const stages = (transitions as any)[contactStage] as string[];
-    return stages.map(stage => (
-      <Button
-        key={stage}
-        color="secondary"
-        variant="outlined"
-        size="small"
-        className={classes.buttonMargin}
-        onClick={() => this.changeMailjetStage(emailAddress, stage)}
-      >
-        {stage}
-      </Button>
-    ));
-  }
-
   private renderTableRow(user: User) {
     const { classes, onUserActivate } = this.props;
     const { selectedUsers } = this.state;
-
-    const contact = this.getContact(user.email_address);
-    const stage = contact ? this.getContactStage(contact) : '--';
 
     return (
       <TableRow
@@ -339,12 +217,6 @@ class UsersTable extends React.Component<PropsType, State> {
         </TableCell>
         <TableCell>
           {moment(user.create_date).format('DD/MM/YYYY')}
-        </TableCell>
-        <TableCell>
-          {stage}
-        </TableCell>
-        <TableCell>
-          {this.renderMailjetStageButtons(user.email_address)}
         </TableCell>
         <TableCell>
           <Button
@@ -409,8 +281,6 @@ class UsersTable extends React.Component<PropsType, State> {
                     </TableCell>
                     <TableCell>Email</TableCell>
                     <TableCell>Registration date</TableCell>
-                    <TableCell>Mailjet Stage</TableCell>
-                    <TableCell>Change stage</TableCell>
                     <TableCell>Manage</TableCell>
                     <TableCell>Activation</TableCell>
                   </TableRow>

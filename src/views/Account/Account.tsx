@@ -2,7 +2,7 @@ import React from 'react';
 import { WithStyles, createStyles, withStyles } from '@material-ui/styles';
 import { Grid, Theme } from '@material-ui/core';
 
-import { AccountProfile, AccountDetails } from './components';
+import { AccountProfile, AccountDetails, MailjetDetails } from './components';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { fetchUser } from 'api/users';
 import User from 'models/user';
@@ -49,6 +49,7 @@ class Account extends React.Component<PropsType, State> {
 
   public render() {
     const { classes } = this.props;
+    const { emailAddress } = this.props.match.params;
     const { account, contact } = this.state;
 
     if (!account || !contact) {
@@ -63,6 +64,11 @@ class Account extends React.Component<PropsType, State> {
           </Grid>
           <Grid item lg={8} md={6} xl={8} xs={12}>
             <AccountDetails account={account} contact={contact} />
+          </Grid>
+          <Grid item lg={4} md={6} xl={4} xs={12}>
+          </Grid>
+          <Grid item lg={8} md={6} xl={8} xs={12}>
+            <MailjetDetails emailAddress={emailAddress} />
           </Grid>
         </Grid>
       </div>
