@@ -1,10 +1,8 @@
+import React from 'react';
 import { Theme, List, ListSubheader, ListItem, ListItemText } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
-import React from 'react';
-
-import { Template } from 'models/snippetGenerator';
-import { TemplateType } from 'api/snippetGenerator';
+import { Template } from 'models/templates';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -12,6 +10,7 @@ const styles = (theme: Theme) => createStyles({
     maxWidth: 480,
     backgroundColor: theme.palette.background.paper,
     overflow: 'auto',
+    wordWrap: 'break-word',
   },
   listSubheader: {
     fontSize: theme.typography.pxToRem(24),
@@ -28,13 +27,15 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   className?: string;
-  templatesWithVars?: Template[];
-  templates?: Template[];
-  potentialTemplatesWithVars?: Template[];
-  potentialTemplates?: Template[];
-  paragraphSnippets?: Template[];
+
+  groups: Array<{
+    name: string;
+    items?: Template[];
+  }>;
+
   selectedItem?: Template;
-  onItemSelected: (item: Template, type: TemplateType) => void;
+
+  onItemSelected: (item: Template) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -43,101 +44,37 @@ interface State {
 }
 
 class SnippetsList extends React.Component<PropsType, State> {
-
   public render() {
     const {
       classes,
       className,
-      templatesWithVars,
-      templates,
-      potentialTemplatesWithVars,
-      potentialTemplates,
-      paragraphSnippets,
+      groups,
       selectedItem,
       onItemSelected
     } = this.props;
 
     return (
       <List className={clsx(classes.root, className)} subheader={<li />}>
-        <li key={`section-templatesWithVars`} className={classes.listSection}>
-          <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Templates with vars`}</ListSubheader>
-            {templatesWithVars && templatesWithVars.map(i => (
-              <ListItem
-                button
-                key={i.trigger}
-                selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'templates_with_vars')}
-              >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
-              </ListItem>
-            ))}
-          </ul>
-        </li>
-
-        <li key={`section-templates`} className={classes.listSection}>
-          <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Templates`}</ListSubheader>
-            {templates && templates.map(i => (
-              <ListItem
-                button
-                key={i.trigger}
-                selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'templates')}
-              >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
-              </ListItem>
-            ))}
-          </ul>
-        </li>
-
-        <li key={`section-potentialTemplatesWithVars`} className={classes.listSection}>
-          <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Potential templates with vars`}</ListSubheader>
-            {potentialTemplatesWithVars && potentialTemplatesWithVars.map(i => (
-              <ListItem
-                button
-                key={i.trigger}
-                selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'potential_templates_with_vars')}
-              >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
-              </ListItem>
-            ))}
-          </ul>
-        </li>
-
-        <li key={`section-potentialTemplates`} className={classes.listSection}>
-          <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Potential templates`}</ListSubheader>
-            {potentialTemplates && potentialTemplates.map(i => (
-              <ListItem
-                button
-                key={i.trigger}
-                selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'potential_templates')}
-              >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
-              </ListItem>
-            ))}
-          </ul>
-        </li>
-
-        <li key={`section-snippets`} className={classes.listSection}>
-          <ul className={classes.ul}>
-            <ListSubheader className={classes.listSubheader}>{`Paragraph Snippets`}</ListSubheader>
-            {paragraphSnippets && paragraphSnippets.map(i => (
-              <ListItem
-                button
-                key={i.trigger}
-                selected={i === selectedItem}
-                onClick={() => onItemSelected(i, 'paragraph_snippets')}
-              >
-                <ListItemText primary={i.trigger} secondary={i.snippet} />
-              </ListItem>
-            ))}
-          </ul>
-        </li>
+        {groups.map(group => (
+          <li key={`section-${group.name}`} className={classes.listSection}>
+            <ul className={classes.ul}>
+              <ListSubheader className={classes.listSubheader}>{group.name}</ListSubheader>
+              {group.items && group.items.map(i => (
+                <ListItem
+                  button
+                  key={i.trigger}
+                  selected={i === selectedItem}
+                  onClick={() => onItemSelected(i)}
+                >
+                  <ListItemText
+                    primary={i.trigger}
+                    secondary={<div dangerouslySetInnerHTML={{ __html: i.text }} />}
+                  />
+                </ListItem>
+              ))}
+            </ul>
+          </li>
+        ))}
       </List>
     );
   }
