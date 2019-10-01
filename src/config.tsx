@@ -12,7 +12,7 @@ const dev = {
   SNIPPET_GENERATOR_URL: "https://dev-snippet-generator.pointapi.com",
   SNIPPET_GENERATOR_USER: "point",
   SNIPPET_GENERATOR_PASS: "scoobyDoo123$",
-  GOOGLE_CLIENT_ID: "772957098874-tn6n2pk1l14le633l9i2iri2dagoiqeo.apps.googleusercontent.com",
+  GOOGLE_CLIENT_ID: "772957098874-m5s9ttjsb52ug0kbpjb7ikq70g2r026o.apps.googleusercontent.com",
   GOOGLE_SCOPE: "profile email https://www.googleapis.com/auth/spreadsheets.readonly",
 };
 
