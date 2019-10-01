@@ -43,7 +43,12 @@ export async function deleteSnippet(
   );
 
   if (response.ok) {
-    return;
+    if (response.status === 204) {
+      return;
+    } else {
+      const result = await response.json();
+      return result;
+    }
   } else {
     throw new Error(`Failed to update snippet (HTTP ${response.status} response)`);
   }

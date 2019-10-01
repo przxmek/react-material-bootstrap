@@ -9,6 +9,7 @@ import User from 'models/user';
 import Contact from 'models/mailjet/contact';
 import { fetchMailjetContact } from 'api/mailjet';
 import { Loading } from 'components';
+import WaitlistSheet from './components/WaitlistSheet/WaitlistSheet';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -69,6 +70,9 @@ class Account extends React.Component<PropsType, State> {
           </Grid>
           <Grid item lg={8} md={6} xl={8} xs={12}>
             <MailjetDetails emailAddress={emailAddress} />
+          </Grid>
+          <Grid item lg={12} md={12} xl={12} xs={12}>
+            <WaitlistSheet emailAddress={emailAddress} />
           </Grid>
         </Grid>
       </div>

@@ -60,8 +60,13 @@ class AccountDetails extends React.Component<PropsType, State> {
   private reloadMailjetContact = async () => {
     const { emailAddress } = this.props;
     this.setState({ loading: true });
-    const contact = await fetchMailjetContact(emailAddress);
-    this.setState({ loading: false, contact });
+    try {
+      const contact = await fetchMailjetContact(emailAddress);
+      this.setState({ loading: false, contact });
+    } catch (e) {
+      showAlert("error", e.message, 10000);
+      this.setState({ loading: false });
+    }
   }
 
   private changeMailjetStage = async (stage: string) => {
@@ -101,9 +106,11 @@ class AccountDetails extends React.Component<PropsType, State> {
     const currentStage = contact ? getContactStage(contact) : undefined;
 
     return stages.map(stage => (
-      <Tooltip title={`${stage.desc} (${stage.key})`}>
+      <Tooltip
+        title={`${stage.desc} (${stage.key})`}
+        key={stage.key}
+      >
         <Button
-          key={stage.key}
           color="secondary"
           variant={currentStage && currentStage.key === stage.key ? "contained" : "outlined"}
           size="small"

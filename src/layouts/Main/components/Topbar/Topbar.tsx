@@ -8,6 +8,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import NotificationsIcon from '@material-ui/icons/NotificationsOutlined';
 import { fromGoogleAuth, Auth, unauthorized } from 'auth';
 import { showAlert } from 'components';
+import { GOOGLE_CLIENT_ID, GOOGLE_SCOPE } from 'config';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -68,14 +69,11 @@ class Topbar extends React.Component<PropsType, State> {
   }
 
   public render() {
-    const { className, classes, onSidebarOpen, ...rest } = this.props;
+    const { className, classes, onSidebarOpen } = this.props;
     const { authorized, notifications } = this.state;
-
+    
     return (
-      <AppBar
-        {...rest}
-        className={clsx(classes.root, className)}
-      >
+      <AppBar className={clsx(classes.root, className)}>
         <Toolbar>
           <RouterLink to="/">
             <img
@@ -107,16 +105,19 @@ class Topbar extends React.Component<PropsType, State> {
           </Hidden>
           {!authorized && (
             <GoogleLogin
-              clientId="772957098874-tn6n2pk1l14le633l9i2iri2dagoiqeo.apps.googleusercontent.com"
+              clientId={GOOGLE_CLIENT_ID}
+              scope={GOOGLE_SCOPE}
               buttonText="Sign in"
               onSuccess={this.googleAuthSuccess}
               onFailure={this.googleAuthFailure}
               cookiePolicy={'single_host_origin'}
+              accessType="offline"
+              isSignedIn={true}
             />
           )}
           {authorized && (
             <GoogleLogout
-              clientId="772957098874-tn6n2pk1l14le633l9i2iri2dagoiqeo.apps.googleusercontent.com"
+              clientId={GOOGLE_CLIENT_ID}
               buttonText="Sign out"
               onLogoutSuccess={this.signOut}
             />

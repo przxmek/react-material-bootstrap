@@ -16,7 +16,6 @@ import {
   SidebarNav,
   // UpgradePlan 
 } from './components';
-import { User } from 'auth';
 
 const useStyles = makeStyles((theme: Theme) => ({
   drawer: {
@@ -46,11 +45,10 @@ interface Props {
   onClose?: () => void;
   open: boolean;
   variant: 'permanent' | 'persistent' | 'temporary';
-  user?: User;
 }
 
 const Sidebar: React.SFC<Props> = props => {
-  const { open, variant, onClose, className, user, ...rest } = props;
+  const { open, variant, onClose, className, ...rest } = props;
 
   const classes = useStyles();
 
@@ -109,7 +107,7 @@ const Sidebar: React.SFC<Props> = props => {
         {...rest}
         className={clsx(classes.root, className)}
       >
-        <Profile user={user} />
+        <Profile />
         <Divider className={classes.divider} />
         <SidebarNav
           className={classes.nav}

@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { makeStyles } from '@material-ui/styles';
 import { Avatar, Typography, Theme } from '@material-ui/core';
 import { User } from 'auth';
+import { RootStateType } from 'redux/reducers';
+import { connect } from 'react-redux';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -27,7 +29,7 @@ interface Props {
 }
 
 const Profile: React.SFC<Props> = props => {
-  const { className, user, ...rest } = props;
+  const { className, user } = props;
 
   const classes = useStyles();
 
@@ -39,7 +41,6 @@ const Profile: React.SFC<Props> = props => {
   if (!user) {
     return (
       <div
-        {...rest}
         className={clsx(classes.root, className)}
       >
         <Avatar
@@ -59,7 +60,6 @@ const Profile: React.SFC<Props> = props => {
 
   return (
     <div
-      {...rest}
       className={clsx(classes.root, className)}
     >
       <Avatar
@@ -80,4 +80,12 @@ const Profile: React.SFC<Props> = props => {
   );
 };
 
-export default Profile;
+const mapStateToProps = (state: RootStateType) => {
+  return {
+    user: state.user
+  };
+};
+
+export default connect(
+  mapStateToProps
+)(Profile);
