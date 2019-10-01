@@ -1,15 +1,19 @@
 import React from 'react';
 import { WithStyles, createStyles, withStyles } from '@material-ui/styles';
 import { Grid, Theme } from '@material-ui/core';
-
-import { AccountProfile, AccountDetails, MailjetDetails } from './components';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
+
+import {
+  AccountProfile,
+  AccountDetails,
+  MailjetDetails,
+  WaitlistSheet
+} from './components';
 import { fetchUser } from 'api/users';
 import User from 'models/user';
 import Contact from 'models/mailjet/contact';
 import { fetchMailjetContact } from 'api/mailjet';
 import { Loading, showAlert } from 'components';
-import WaitlistSheet from './components/WaitlistSheet/WaitlistSheet';
 
 const styles = (theme: Theme) => createStyles({
   root: {

@@ -10,10 +10,17 @@ import {
   Typography,
   Divider,
   Button,
-  LinearProgress,
-  Theme
+  Theme,
+  TextField,
+  IconButton,
+  Box,
+  Tooltip
 } from '@material-ui/core';
 import User from 'models/user';
+import AddIcon from '@material-ui/icons/AddBox';
+import { showAlert } from 'components';
+import { addPremiumDays } from 'api/users';
+
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -26,6 +33,16 @@ const styles = (theme: Theme) => createStyles({
     width: 60,
     flexShrink: 0,
     flexGrow: 0
+  },
+  daysBox: {
+    marginTop: theme.spacing(1),
+  },
+  daysText: {
+    marginRight: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+  },
+  daysInput: {
+    width: 150,
   },
   progress: {
     marginTop: theme.spacing(2)
@@ -43,18 +60,45 @@ interface Props {
 
 type PropsType = Props & WithStyles<typeof styles>;
 
-interface State { }
+interface State {
+  premiumDaysInput: string;
+}
 
 class AccountProfile extends React.Component<PropsType, State> {
+  public state: State = {
+    premiumDaysInput: '14'
+  };
+
+  private changePremiumDays = (premiumDaysInput: string) => {
+    const parsed = parseInt(premiumDaysInput, 10);
+    if (parsed >= 0) {
+      this.setState({ premiumDaysInput });
+    }
+  }
+
+  private addPremiumDays = async () => {
+    const { premiumDaysInput } = this.state;
+    const emailAddress = this.props.account.email_address;
+
+    const premiumDays = parseInt(premiumDaysInput, 10);
+
+    if (premiumDays > 0) {
+      try {
+        await addPremiumDays(emailAddress, premiumDays);
+      } catch (e) {
+        showAlert("error", e.message, 10000);
+      }
+    } else {
+      showAlert("error", "Number of days must be greater than 0.", 10000);
+    }
+  }
 
   public render() {
-    const { classes, className, account, ...rest } = this.props;
+    const { classes, className, account } = this.props;
+    const { premiumDaysInput } = this.state;
 
     return (
-      <Card
-        {...rest}
-        className={clsx(classes.root, className)}
-      >
+      <Card className={clsx(classes.root, className)}>
         <CardContent>
           <div className={classes.details}>
             <div>
@@ -77,13 +121,40 @@ class AccountProfile extends React.Component<PropsType, State> {
               src='/images/avatars/anonymous-user.png'
             />
           </div>
-          <div className={classes.progress}>
+          <Divider />
+          {/* <div className={classes.progress}>
             <Typography variant="body1">Onboarding Completeness: 70%</Typography>
             <LinearProgress
               value={70}
               variant="determinate"
             />
-          </div>
+          </div> */}
+          <Box
+            className={classes.daysBox}
+            display="flex"
+            alignItems="flex-end"
+          >
+            <Typography
+              className={classes.daysText}
+              variant="body1"
+              color="textPrimary"
+            >
+              Add premium:
+            </Typography>
+            <TextField
+              label="Number of days"
+              className={classes.daysInput}
+              value={premiumDaysInput}
+              onChange={(e) => this.changePremiumDays(e.target.value)}
+              type="number"
+              margin="dense"
+            />
+            <Tooltip title="Add premium for this user">
+              <IconButton onClick={() => this.addPremiumDays()}>
+                <AddIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </CardContent>
         <Divider />
         <CardActions>
