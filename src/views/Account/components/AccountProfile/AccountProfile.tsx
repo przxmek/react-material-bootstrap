@@ -22,8 +22,8 @@ const styles = (theme: Theme) => createStyles({
   },
   avatar: {
     marginLeft: 'auto',
-    height: 110,
-    width: 100,
+    height: 60,
+    width: 60,
     flexShrink: 0,
     flexGrow: 0
   },
