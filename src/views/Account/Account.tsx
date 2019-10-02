@@ -65,6 +65,17 @@ class Account extends React.Component<PropsType, State> {
     }
   }
 
+  private reloadAccount = async () => {
+    const emailAddress = this.props.match.params.emailAddress;
+
+    try {
+      const account = await fetchUser(emailAddress);
+      this.setState({ account });
+    } catch (e) {
+      showAlert("error", e.message, 10000);
+    }
+  }
+
   public render() {
     const { classes } = this.props;
     const { emailAddress } = this.props.match.params;
@@ -83,7 +94,7 @@ class Account extends React.Component<PropsType, State> {
       <div className={classes.root}>
         <Grid container spacing={4}>
           <Grid item lg={4} md={6} xl={4} xs={12}>
-            <AccountProfile account={account} />
+            <AccountProfile account={account} onAccountUpdate={this.reloadAccount} />
           </Grid>
           <Grid item lg={8} md={6} xl={8} xs={12}>
             <AccountDetails account={account} contact={contact} />

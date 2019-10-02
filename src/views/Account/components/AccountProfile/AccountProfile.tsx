@@ -14,12 +14,14 @@ import {
   TextField,
   IconButton,
   Box,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from '@material-ui/core';
 import User from 'models/user';
 import AddIcon from '@material-ui/icons/AddBox';
 import { showAlert } from 'components';
 import { addPremiumDays } from 'api/users';
+import moment from 'moment';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -44,28 +46,34 @@ const styles = (theme: Theme) => createStyles({
   daysInput: {
     width: 150,
   },
-  progress: {
+  onboardingProgress: {
     marginTop: theme.spacing(2)
   },
   marginRight: {
     marginRight: theme.spacing(2)
   },
-  userInfoText: {},
+  progress: {
+    marginLeft: "auto",
+    marginRight: theme.spacing(1)
+  },
 });
 
 interface Props {
   className?: string;
   account: User;
+  onAccountUpdate: () => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
+  loading: boolean;
   premiumDaysInput: string;
 }
 
 class AccountProfile extends React.Component<PropsType, State> {
   public state: State = {
+    loading: false,
     premiumDaysInput: '14'
   };
 
@@ -76,17 +84,22 @@ class AccountProfile extends React.Component<PropsType, State> {
     }
   }
 
-  private addPremiumDays = async () => {
+  private savePremiumDays = async () => {
     const { premiumDaysInput } = this.state;
-    const emailAddress = this.props.account.email_address;
+    const { account, onAccountUpdate } = this.props;
 
     const premiumDays = parseInt(premiumDaysInput, 10);
 
     if (premiumDays > 0) {
       try {
-        await addPremiumDays(emailAddress, premiumDays);
+        this.setState({ loading: true });
+        await addPremiumDays(account, premiumDays);
+        showAlert("success", "Updated user's premium period!");
+        onAccountUpdate();
       } catch (e) {
         showAlert("error", e.message, 10000);
+      } finally {
+        this.setState({ loading: false });
       }
     } else {
       showAlert("error", "Number of days must be greater than 0.", 10000);
@@ -95,26 +108,24 @@ class AccountProfile extends React.Component<PropsType, State> {
 
   public render() {
     const { classes, className, account } = this.props;
-    const { premiumDaysInput } = this.state;
+    const { loading, premiumDaysInput } = this.state;
 
     return (
       <Card className={clsx(classes.root, className)}>
         <CardContent>
           <div className={classes.details}>
             <div>
-              <Typography
-                gutterBottom
-                variant="h4"
-              >
+              <Typography gutterBottom variant="h4">
                 {account.email_address}
               </Typography>
-              <Typography
-                className={classes.userInfoText}
-                color="textSecondary"
-                variant="body1"
-              >
+              <Typography color="textSecondary" variant="body1">
                 {account.active ? "Active" : "Inactive"}{" "}{account.membership_type}{" user"}
               </Typography>
+              {account.membership_type === "premium" && account.active_until && (
+                <Typography color="textSecondary" variant="body1" gutterBottom>
+                  {`Active until ${moment(account.active_until).format('llll')}`}
+                </Typography>
+              )}
             </div>
             <Avatar
               className={classes.avatar}
@@ -122,7 +133,7 @@ class AccountProfile extends React.Component<PropsType, State> {
             />
           </div>
           <Divider />
-          {/* <div className={classes.progress}>
+          {/* <div className={classes.onboardingProgress}>
             <Typography variant="body1">Onboarding Completeness: 70%</Typography>
             <LinearProgress
               value={70}
@@ -150,7 +161,7 @@ class AccountProfile extends React.Component<PropsType, State> {
               margin="dense"
             />
             <Tooltip title="Add premium for this user">
-              <IconButton onClick={() => this.addPremiumDays()}>
+              <IconButton onClick={() => this.savePremiumDays()}>
                 <AddIcon />
               </IconButton>
             </Tooltip>
@@ -167,6 +178,7 @@ class AccountProfile extends React.Component<PropsType, State> {
           >
             Templates
           </Button>
+          {loading && (<CircularProgress size={28} className={classes.progress} />)}
         </CardActions>
       </Card>
     );
