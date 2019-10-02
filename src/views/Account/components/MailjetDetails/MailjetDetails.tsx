@@ -13,11 +13,12 @@ import {
   Typography,
   Tooltip,
   CircularProgress,
+  ButtonGroup,
 } from '@material-ui/core';
 import Contact from 'models/mailjet/contact';
 import { changeContactStage, fetchMailjetContact } from 'api/mailjet';
 import { showAlert } from 'components';
-import { getContactStage } from 'models/mailjet/mailjet';
+import { getContactStage, StageMeta, getStages } from 'models/mailjet/mailjet';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -83,17 +84,35 @@ class AccountDetails extends React.Component<PropsType, State> {
     }
   }
 
+  private renderMailjetButton = (stage: StageMeta, margin?: boolean) => {
+    const { classes } = this.props;
+    const { contact } = this.state;
+
+    const currentStage = contact ? getContactStage(contact) : undefined;
+
+    return (
+      <Tooltip
+        title={`${stage.desc} (${stage.key})`}
+        key={stage.key}
+      >
+        <Button
+          color="secondary"
+          variant={currentStage && currentStage.key === stage.key ? "contained" : "outlined"}
+          size="small"
+          className={margin ? classes.buttonMargin : undefined}
+          onClick={() => this.changeMailjetStage(stage.key)}
+        >
+          {stage.name}
+        </Button>
+      </Tooltip>
+    );
+  }
+
   private renderMailjetStageButtons() {
     const { classes } = this.props;
     const { contact, loading } = this.state;
 
-    const stages: Array<{ key: string; name: string; desc: string }> = [
-      // { key: "new_signup", name: "New signup", desc: "Signed up for the waitlist" },
-      { key: "onboarding", name: "Onboarding", desc: "We wanna onboard you" },
-      { key: "onboarding_survey_received", name: "Onboarding survey received", desc: "We received your survey" },
-      { key: "scheduling_onboarding", name: "Scheduling onboarding", desc: "We wanna schedule an onboarding call" },
-      { key: "onboarding_completed", name: "Onboarding completed", desc: "After call follow up" },
-    ];
+    const stages = getStages();
 
     if (!contact && !loading) {
       return (
@@ -103,24 +122,22 @@ class AccountDetails extends React.Component<PropsType, State> {
       );
     }
 
-    const currentStage = contact ? getContactStage(contact) : undefined;
-
-    return stages.map(stage => (
-      <Tooltip
-        title={`${stage.desc} (${stage.key})`}
-        key={stage.key}
-      >
-        <Button
-          color="secondary"
-          variant={currentStage && currentStage.key === stage.key ? "contained" : "outlined"}
-          size="small"
-          className={classes.buttonMargin}
-          onClick={() => this.changeMailjetStage(stage.key)}
-        >
-          {stage.name}
-        </Button>
-      </Tooltip>
-    ));
+    return stages.map(stage => {
+      if (!stage.subStages) {
+        return this.renderMailjetButton(stage, true);
+      } else {
+        return (
+          <ButtonGroup
+            color="secondary"
+            size="small"
+            className={classes.buttonMargin}
+          >
+            {this.renderMailjetButton(stage)}
+            {stage.subStages.map(s => this.renderMailjetButton(s))}
+          </ButtonGroup>
+        );
+      }
+    });
   }
 
   public render() {
