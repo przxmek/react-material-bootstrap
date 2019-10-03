@@ -1,7 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
-
 import { Topbar } from './components';
 
 const useStyles = makeStyles(() => ({
@@ -14,7 +12,11 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const Minimal = props => {
+interface Props {
+  className?: string;
+}
+
+const Minimal: React.FunctionComponent<Props> = props => {
   const { children } = props;
 
   const classes = useStyles();
@@ -25,11 +27,6 @@ const Minimal = props => {
       <main className={classes.content}>{children}</main>
     </div>
   );
-};
-
-Minimal.propTypes = {
-  children: PropTypes.node,
-  className: PropTypes.string
 };
 
 export default Minimal;

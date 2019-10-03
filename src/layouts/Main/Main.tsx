@@ -3,12 +3,10 @@ import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import { useMediaQuery, Theme } from '@material-ui/core';
 import { Sidebar, Topbar, Footer } from './components';
-import { Auth, User } from 'auth';
-import { RootStateType } from 'redux/reducers';
 import { connect } from 'react-redux';
-import { setUser } from 'redux/actions';
-import sendAuthResponse from 'api/auth';
-import { showAlert } from 'components';
+import { RootStateType } from 'redux/reducers';
+import { User } from 'auth';
+import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -30,11 +28,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 interface Props {
   user?: User;
-  setUser: (user?: User) => void;
 }
 
 const Main: React.SFC<Props> = (props) => {
-  const { children } = props;
+  const { children, user } = props;
 
   const classes = useStyles();
   const theme = useTheme<Theme>();
@@ -43,20 +40,6 @@ const Main: React.SFC<Props> = (props) => {
   });
 
   const [openSidebar, setOpenSidebar] = useState(false);
-
-  const handleOnAuth = async (auth: Auth) => {
-    if (auth.googleAuth) {
-      try {
-        await sendAuthResponse(
-          auth.googleAuth.getAuthResponse().id_token,
-          auth.googleAuth.getAuthResponse().access_token
-        );
-      } catch (e) {
-        showAlert("error", e.message, 10000);
-      }
-    }
-    props.setUser(auth.user);
-  };
 
   const handleSidebarOpen = () => {
     setOpenSidebar(true);
@@ -68,6 +51,12 @@ const Main: React.SFC<Props> = (props) => {
 
   const shouldOpenSidebar = isDesktop ? true : openSidebar;
 
+  if (!user) {
+    return (
+      <Redirect to='/sign-in' push />
+    );
+  }
+
   return (
     <div
       className={clsx({
@@ -76,7 +65,6 @@ const Main: React.SFC<Props> = (props) => {
       })}
     >
       <Topbar
-        onAuth={handleOnAuth}
         onSidebarOpen={handleSidebarOpen}
       />
       <Sidebar
@@ -96,11 +84,6 @@ const mapStateToProps = (state: RootStateType) => {
   return { user: state.user };
 };
 
-const dispatchProps = {
-  setUser
-};
-
 export default connect(
   mapStateToProps,
-  dispatchProps
 )(Main);

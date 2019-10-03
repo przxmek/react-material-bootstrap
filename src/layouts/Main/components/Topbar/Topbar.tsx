@@ -1,14 +1,10 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline, GoogleLogout } from 'react-google-login';
 import clsx from 'clsx';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import { AppBar, Toolbar, Badge, Hidden, IconButton, Typography, Theme } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import NotificationsIcon from '@material-ui/icons/NotificationsOutlined';
-import { fromGoogleAuth, Auth, unauthorized } from 'auth';
-import { showAlert } from 'components';
-import { GOOGLE_CLIENT_ID, GOOGLE_SCOPE } from 'config';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -17,6 +13,10 @@ const styles = (theme: Theme) => createStyles({
   logo: {
     height: '36px',
     display: 'inline-block'
+  },
+  logoDashboardText: {
+    color: theme.palette.text.hint,
+    marginLeft: theme.spacing(),
   },
   flexGrow: {
     flexGrow: 1
@@ -29,49 +29,24 @@ const styles = (theme: Theme) => createStyles({
 interface Props {
   className?: string;
   onSidebarOpen: () => void;
-  onAuth: (auth: Auth) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
-  authorized: boolean;
   notifications: any[];
 }
 
 class Topbar extends React.Component<PropsType, State> {
 
   public state = {
-    authorized: false,
     notifications: [],
   };
 
-  private googleAuthSuccess = (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-    const { onAuth } = this.props;
-
-    onAuth(fromGoogleAuth(response as GoogleLoginResponse));
-    this.setState({ authorized: true });
-  }
-
-  private googleAuthFailure = (response: { error: string }) => {
-    showAlert('error', `Failed to sign in with Google: ${response.error}`);
-    this.setState({ authorized: false });
-  }
-
-  private signOut = () => {
-    const { onAuth } = this.props;
-    const { authorized } = this.state;
-
-    if (authorized) {
-      this.setState({ authorized: false });
-      onAuth(unauthorized());
-    }
-  }
-
   public render() {
     const { className, classes, onSidebarOpen } = this.props;
-    const { authorized, notifications } = this.state;
-    
+    const { notifications } = this.state;
+
     return (
       <AppBar className={clsx(classes.root, className)}>
         <Toolbar>
@@ -81,7 +56,14 @@ class Topbar extends React.Component<PropsType, State> {
               alt="Point."
               src="/images/logos/point-logo.svg"
             />
-            <Typography color="textPrimary" variant="h2" display="inline"> Admin Dashboard</Typography>
+            <Typography
+              className={classes.logoDashboardText}
+              color="textPrimary"
+              variant="h2"
+              display="inline"
+            >
+              Admin Dashboard
+            </Typography>
           </RouterLink>
           <div className={classes.flexGrow} />
           <Hidden mdDown>
@@ -103,25 +85,6 @@ class Topbar extends React.Component<PropsType, State> {
               <MenuIcon />
             </IconButton>
           </Hidden>
-          {!authorized && (
-            <GoogleLogin
-              clientId={GOOGLE_CLIENT_ID}
-              scope={GOOGLE_SCOPE}
-              buttonText="Sign in"
-              onSuccess={this.googleAuthSuccess}
-              onFailure={this.googleAuthFailure}
-              cookiePolicy={'single_host_origin'}
-              accessType="offline"
-              isSignedIn={true}
-            />
-          )}
-          {authorized && (
-            <GoogleLogout
-              clientId={GOOGLE_CLIENT_ID}
-              buttonText="Sign out"
-              onLogoutSuccess={this.signOut}
-            />
-          )}
         </Toolbar>
       </AppBar>
     );

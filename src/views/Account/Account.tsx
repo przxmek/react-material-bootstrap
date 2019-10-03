@@ -1,7 +1,7 @@
 import React from 'react';
 import { WithStyles, createStyles, withStyles } from '@material-ui/styles';
 import { Grid, Theme } from '@material-ui/core';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { withRouter, RouteComponentProps, Redirect } from 'react-router-dom';
 
 import {
   AccountProfile,
@@ -86,8 +86,7 @@ class Account extends React.Component<PropsType, State> {
     }
 
     if (!account) {
-      showAlert("error", `User not found (email: ${emailAddress}`, 10000);
-      return;
+      return <Redirect to="/not-found" />;
     }
 
     return (
