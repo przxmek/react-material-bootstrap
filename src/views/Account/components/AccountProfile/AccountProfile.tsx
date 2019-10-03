@@ -6,7 +6,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  Avatar,
   Typography,
   Divider,
   Button,
@@ -122,24 +121,26 @@ class AccountProfile extends React.Component<PropsType, State> {
                 {account.active ? "Active" : "Inactive"}{" "}{account.membership_type}{" user"}
               </Typography>
               {account.membership_type === "premium" && account.active_until && (
-                <Typography color="textSecondary" variant="body1" gutterBottom>
+                <Typography color="textSecondary" variant="body1">
                   {`Active until ${moment(account.active_until).format('llll')}`}
                 </Typography>
               )}
             </div>
-            <Avatar
+            {/* <Avatar
               className={classes.avatar}
               src='/images/avatars/anonymous-user.png'
-            />
+            /> */}
           </div>
-          <Divider />
+        </CardContent>
+        <Divider />
+        <CardContent>
           {/* <div className={classes.onboardingProgress}>
-            <Typography variant="body1">Onboarding Completeness: 70%</Typography>
-            <LinearProgress
-              value={70}
-              variant="determinate"
-            />
-          </div> */}
+              <Typography variant="body1">Onboarding Completeness: 70%</Typography>
+              <LinearProgress
+                value={70}
+                variant="determinate"
+              />
+            </div> */}
           <Box
             className={classes.daysBox}
             display="flex"
