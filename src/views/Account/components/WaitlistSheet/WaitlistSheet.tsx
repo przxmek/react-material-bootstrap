@@ -134,14 +134,22 @@ class WaitlistSheet extends React.Component<PropsType, State> {
 
   private renderSheetsData() {
     const { classes, emailAddress } = this.props;
-    const { data, empty } = this.state;
+    const { data, empty, loading } = this.state;
 
     if (!data) {
-      return (
-        <Typography variant="body1" color="textSecondary">
-          Loading data for {emailAddress}..
-        </Typography>
-      );
+      if (loading) {
+        return (
+          <Typography variant="body1" color="textSecondary">
+            Loading data for {emailAddress}..
+          </Typography>
+        );
+      } else {
+        return (
+          <Typography variant="body1" color="error">
+            Failed to load data for {emailAddress}. Check if you're sgined in. Try re-signing in.
+          </Typography>
+        );
+      }
     }
 
     if (empty) {
