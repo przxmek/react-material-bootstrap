@@ -58,6 +58,7 @@ type PropsType = Props & WithStyles<typeof styles>;
 
 interface State {
   data?: WaitlistSpreadsheet;
+  empty?: boolean;
   loading: boolean;
 }
 
@@ -68,6 +69,7 @@ class WaitlistSheet extends React.Component<PropsType, State> {
 
     this.state = {
       data: undefined,
+      empty: undefined,
       loading: true,
     };
   }
@@ -81,11 +83,24 @@ class WaitlistSheet extends React.Component<PropsType, State> {
     this.setState({ loading: true });
     try {
       const data = await getGoogleSheetsUserData(emailAddress);
-      this.setState({ loading: false, data });
+      const empty = this.isEmpty(data);
+      this.setState({ data, empty, loading: false });
     } catch (e) {
       showAlert("error", e.message, 10000);
       this.setState({ loading: false });
     }
+  }
+
+  private isEmpty = (data: WaitlistSpreadsheet) => {
+    if (data["NPS score"].length > 1
+      || data["Onboarding call"].length > 1
+      || data["Onboarding survey"].length > 1
+      || data["Team signups"].length > 1
+      || data["Uninstall form"].length > 1) {
+      return false;
+    }
+
+    return true;
   }
 
   private renderDataTable(data: string[][]) {
@@ -118,11 +133,23 @@ class WaitlistSheet extends React.Component<PropsType, State> {
   }
 
   private renderSheetsData() {
-    const { classes } = this.props;
-    const { data } = this.state;
+    const { classes, emailAddress } = this.props;
+    const { data, empty } = this.state;
 
     if (!data) {
-      return;
+      return (
+        <Typography variant="body1" color="textSecondary">
+          Loading data for {emailAddress}..
+        </Typography>
+      );
+    }
+
+    if (empty) {
+      return (
+        <Typography variant="body1" color="textSecondary">
+          No data for {emailAddress}.
+        </Typography>
+      );
     }
 
     return Object.entries(data).map(([key, value]) =>
@@ -172,6 +199,14 @@ class WaitlistSheet extends React.Component<PropsType, State> {
               onClick={() => this.reloadGoogleSheetsData()}
             >
               Refresh
+            </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              href="https://docs.google.com/spreadsheets/d/1w5XYng5OGsbHQDhnDyghy6T2BusTbO9TmK73s7IveOo/edit?usp=sharing"
+              target="blank"
+            >
+              Open in Google Sheets
             </Button>
             {loading && (<CircularProgress size={28} className={classes.progress} />)}
           </CardActions>

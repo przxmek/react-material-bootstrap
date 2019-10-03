@@ -197,14 +197,6 @@ class AccountDetails extends React.Component<PropsType, State> {
             >
               Refresh
             </Button>
-            <Button
-              color="primary"
-              variant="outlined"
-              href="https://docs.google.com/spreadsheets/d/1w5XYng5OGsbHQDhnDyghy6T2BusTbO9TmK73s7IveOo/edit?usp=sharing"
-              target="blank"
-            >
-              Open in Google Sheets
-            </Button>
             {loading && (<CircularProgress size={28} className={classes.progress} />)}
           </CardActions>
         </form>
