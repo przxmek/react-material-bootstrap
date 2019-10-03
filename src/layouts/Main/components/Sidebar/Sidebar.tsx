@@ -1,8 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
-import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
-import { Divider, Drawer } from '@material-ui/core';
+import { Divider, Drawer, Theme } from '@material-ui/core';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import PeopleIcon from '@material-ui/icons/People';
 import ShoppingBasketIcon from '@material-ui/icons/ShoppingBasket';
@@ -18,7 +17,7 @@ import {
   // UpgradePlan 
 } from './components';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   drawer: {
     width: 240,
     [theme.breakpoints.up('lg')]: {
@@ -27,7 +26,7 @@ const useStyles = makeStyles(theme => ({
     }
   },
   root: {
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.common.white,
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
@@ -41,7 +40,14 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Sidebar = props => {
+interface Props {
+  className?: string;
+  onClose?: () => void;
+  open: boolean;
+  variant: 'permanent' | 'persistent' | 'temporary';
+}
+
+const Sidebar: React.SFC<Props> = props => {
   const { open, variant, onClose, className, ...rest } = props;
 
   const classes = useStyles();
@@ -111,13 +117,6 @@ const Sidebar = props => {
       </div>
     </Drawer>
   );
-};
-
-Sidebar.propTypes = {
-  className: PropTypes.string,
-  onClose: PropTypes.func,
-  open: PropTypes.bool.isRequired,
-  variant: PropTypes.string.isRequired
 };
 
 export default Sidebar;

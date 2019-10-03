@@ -15,6 +15,8 @@ import {
 } from "@material-ui/core/styles";
 import { render, unmountComponentAtNode } from "react-dom";
 import { ExitHandler } from "react-transition-group/Transition";
+import defaultTheme from 'theme';
+import { ThemeProvider } from "@material-ui/styles";
 
 const variantIcon = {
   success: CheckCircleIcon,
@@ -126,13 +128,15 @@ export function showAlert(
     mount.remove();
   };
   render(
-    <Alert
-      variant={variant}
-      message={message}
-      autoHideDuration={autoHideDuration}
-      onClose={onClose}
-      {...props}
-    />,
+    <ThemeProvider theme={defaultTheme}>
+      <Alert
+        variant={variant}
+        message={message}
+        autoHideDuration={autoHideDuration}
+        onClose={onClose}
+        {...props}
+      />
+    </ThemeProvider>,
     mount
   );
 }

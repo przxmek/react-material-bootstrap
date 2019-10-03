@@ -2,13 +2,14 @@ import React from 'react';
 import { WithStyles, createStyles, withStyles } from '@material-ui/styles';
 import { Grid, Theme } from '@material-ui/core';
 
-import { AccountProfile, AccountDetails } from './components';
+import { AccountProfile, AccountDetails, MailjetDetails } from './components';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { fetchUser } from 'api/users';
 import User from 'models/user';
 import Contact from 'models/mailjet/contact';
 import { fetchMailjetContact } from 'api/mailjet';
-import { Loading } from 'components';
+import { Loading, showAlert } from 'components';
+import WaitlistSheet from './components/WaitlistSheet/WaitlistSheet';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -25,6 +26,7 @@ type PropsType = WithStyles<typeof styles> & RouteComponentProps<PathParamsType>
 interface State {
   account?: User;
   contact?: Contact;
+  loading: boolean;
 }
 
 class Account extends React.Component<PropsType, State> {
@@ -34,25 +36,43 @@ class Account extends React.Component<PropsType, State> {
 
     this.state = {
       account: undefined,
-      contact: undefined
+      contact: undefined,
+      loading: true,
     };
   }
 
   public componentDidMount = async () => {
+    await this.reloadData();
+  }
+
+  private reloadData = async () => {
     const emailAddress = this.props.match.params.emailAddress;
 
-    const account = await fetchUser(emailAddress);
-    const contact = await fetchMailjetContact(account.email_address);
-
-    this.setState({ account, contact });
+    this.setState({ loading: true });
+    try {
+      const account = await fetchUser(emailAddress);
+      this.setState({ account });
+      const contact = await fetchMailjetContact(account.email_address);
+      this.setState({ contact });
+    } catch (e) {
+      showAlert("error", e.message, 10000);
+    } finally {
+      this.setState({ loading: false });
+    }
   }
 
   public render() {
     const { classes } = this.props;
-    const { account, contact } = this.state;
+    const { emailAddress } = this.props.match.params;
+    const { account, contact, loading } = this.state;
 
-    if (!account || !contact) {
+    if (loading) {
       return (<Loading />);
+    }
+
+    if (!account) {
+      showAlert("error", `User not found (email: ${emailAddress}`, 10000);
+      return;
     }
 
     return (
@@ -63,6 +83,14 @@ class Account extends React.Component<PropsType, State> {
           </Grid>
           <Grid item lg={8} md={6} xl={8} xs={12}>
             <AccountDetails account={account} contact={contact} />
+          </Grid>
+          <Grid item lg={4} md={6} xl={4} xs={12}>
+          </Grid>
+          <Grid item lg={8} md={6} xl={8} xs={12}>
+            <MailjetDetails emailAddress={emailAddress} />
+          </Grid>
+          <Grid item lg={12} md={12} xl={12} xs={12}>
+            <WaitlistSheet emailAddress={emailAddress} />
           </Grid>
         </Grid>
       </div>

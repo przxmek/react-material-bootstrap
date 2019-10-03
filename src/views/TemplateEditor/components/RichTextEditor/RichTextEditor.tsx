@@ -1,10 +1,22 @@
-import { Theme, Button, TextField, Grid, TextareaAutosize, FormControlLabel, Checkbox, Box } from '@material-ui/core';
+import {
+  Theme,
+  Button,
+  TextField,
+  Grid,
+  TextareaAutosize,
+  FormControlLabel,
+  Checkbox,
+  Box
+} from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteOutlined';
-import * as ReactQuill from 'react-quill';
+import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Template } from 'models/snippetGenerator';
+import "quill-emoji";
+import "quill-emoji/dist/quill-emoji.css";
+import { Template } from 'models/templates';
+import ChipsArray from './ChipsArray';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -31,9 +43,9 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   snippet?: Template;
-  onApply: (newText: string, newTrigger: string, snippet?: Template) => void;
+  onApply?: (text: string, trigger: string, labels: string[]) => void;
   onRemove: (snippet: Template) => void;
-  onSave: (snippet: Template, newText: string, newTrigger: string) => void;
+  onSave: (text: string, trigger: string, labels: string[]) => void;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -42,41 +54,44 @@ interface State {
   htmlEditor: boolean;
   text: string;
   trigger: string;
+  labels: string[];
 }
 
 class RichTextEditor extends React.Component<PropsType, State> {
   private modules = {
-    toolbar: [
-      [{ 'header': '1' }, { 'header': '2' }],
-      [{ size: [] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' },
-      { 'indent': '-1' }, { 'indent': '+1' }],
-      ['link', 'image'],
-      ['clean']
-    ],
+    toolbar: {
+      container: [
+        [{ 'header': '1' }, { 'header': '2' }],
+        [{ size: [] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' },
+        { 'indent': '-1' }, { 'indent': '+1' }],
+        ['link', 'image', 'emoji'],
+        ['clean'],
+      ]
+    },
     clipboard: {
       // toggle to add extra line breaks when pasting HTML:
       matchVisual: false,
-    }
+    },
+    "emoji-toolbar": true,
   };
 
   private formats = [
     'header', 'size',
     'bold', 'italic', 'underline', 'strike', 'blockquote',
     'list', 'bullet', 'indent',
-    'link', 'image'
+    'link', 'image', 'emoji'
   ];
 
   constructor(props: PropsType) {
     super(props);
 
-
-
     this.state = {
       htmlEditor: true,
-      text: props.snippet ? props.snippet.snippet : "",
+      text: props.snippet ? props.snippet.text : "",
       trigger: props.snippet ? props.snippet.trigger : "",
+      labels: props.snippet ? props.snippet.labels : []
     };
   }
 
@@ -84,7 +99,11 @@ class RichTextEditor extends React.Component<PropsType, State> {
     const { snippet } = this.props;
     if (snippet !== prevProps.snippet) {
       if (snippet) {
-        this.setState({ text: snippet.snippet, trigger: snippet.trigger });
+        this.setState({
+          text: snippet.text,
+          trigger: snippet.trigger,
+          labels: snippet && (snippet as any).labels ? (snippet as any).labels : undefined
+        });
       } else {
         this.setState({ text: "", trigger: "" });
       }
@@ -99,9 +118,58 @@ class RichTextEditor extends React.Component<PropsType, State> {
     this.setState({ trigger });
   }
 
+  private onDeleteLabel = (label: string) => {
+    if (!this.state.labels) {
+      return;
+    }
+
+    const labels = this.state.labels.filter(l => l !== label);
+    this.setState({ labels });
+  }
+
+  private onSaveNewLabel = (label: string) => {
+    if (!this.state.labels) {
+      return;
+    }
+
+    const labels = this.state.labels.slice();
+    labels.push(label);
+
+    this.setState({ labels });
+  }
+
+  private reformatText = (htmlText: string) => {
+    return htmlText
+      .replace(/<br>/g, '')
+      .replace(/<\/p><p>/g, '<br>')
+      .replace(/<p>|<\/p>/g, '');
+  }
+
+  private onSave = () => {
+    const { onSave } = this.props;
+    const { text, trigger, labels } = this.state;
+
+    const formatted = this.reformatText(text);
+
+    onSave(formatted, trigger, labels);
+  }
+
+  private onApply = () => {
+    const { onApply } = this.props;
+    const { text, trigger, labels } = this.state;
+
+    if (!onApply) {
+      return;
+    }
+
+    const formatted = this.reformatText(text);
+
+    onApply(formatted, trigger, labels);
+  }
+
   public render() {
-    const { classes, onApply, onRemove, onSave, snippet } = this.props;
-    const { text, trigger, htmlEditor } = this.state;
+    const { classes, onRemove, onApply, snippet } = this.props;
+    const { text, trigger, labels, htmlEditor } = this.state;
 
     return (
       <Box
@@ -121,6 +189,15 @@ class RichTextEditor extends React.Component<PropsType, State> {
             shrink: true,
           }}
         />
+
+        {labels && (<>
+          <ChipsArray
+            data={labels}
+            handleDelete={this.onDeleteLabel}
+            handleSaveNewLabel={this.onSaveNewLabel}
+          />
+        </>
+        )}
 
         <FormControlLabel
           label="HTML Editor"
@@ -147,7 +224,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
         )}
 
         {htmlEditor && (
-          <ReactQuill.default
+          <ReactQuill
             value={text}
             onChange={this.onTextChange}
             modules={this.modules}
@@ -168,18 +245,19 @@ class RichTextEditor extends React.Component<PropsType, State> {
             </Button>
           </Grid>
           <Grid item xs></Grid>
-          <Grid item>
-            <Button variant="outlined" onClick={() => onApply(text, trigger, snippet)}>
-              Apply to profile
-            </Button>
-          </Grid>
+          {onApply && (
+            <Grid item>
+              <Button variant="outlined" onClick={() => this.onApply()}>
+                Apply to profile
+              </Button>
+            </Grid>
+          )}
           <Grid item>
             <Button
               variant="contained"
               color="primary"
-              disabled={!snippet}
-              onClick={() => snippet && onSave(snippet, text, trigger)}
-              >
+              onClick={() => this.onSave()}
+            >
               Save edits
             </Button>
           </Grid>

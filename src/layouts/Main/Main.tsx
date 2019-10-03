@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/styles';
-import { useMediaQuery } from '@material-ui/core';
-
+import { useMediaQuery, Theme } from '@material-ui/core';
 import { Sidebar, Topbar, Footer } from './components';
+import { Auth, User } from 'auth';
+import { RootStateType } from 'redux/reducers';
+import { connect } from 'react-redux';
+import { setUser } from 'redux/actions';
+import sendAuthResponse from 'api/auth';
+import { showAlert } from 'components';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     paddingTop: 56,
     height: '100%',
@@ -24,16 +28,35 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Main = props => {
+interface Props {
+  user?: User;
+  setUser: (user?: User) => void;
+}
+
+const Main: React.SFC<Props> = (props) => {
   const { children } = props;
 
   const classes = useStyles();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true
   });
 
   const [openSidebar, setOpenSidebar] = useState(false);
+
+  const handleOnAuth = async (auth: Auth) => {
+    if (auth.googleAuth) {
+      try {
+        await sendAuthResponse(
+          auth.googleAuth.getAuthResponse().id_token,
+          auth.googleAuth.getAuthResponse().access_token
+        );
+      } catch (e) {
+        showAlert("error", e.message, 10000);
+      }
+    }
+    props.setUser(auth.user);
+  };
 
   const handleSidebarOpen = () => {
     setOpenSidebar(true);
@@ -52,7 +75,10 @@ const Main = props => {
         [classes.shiftContent]: isDesktop
       })}
     >
-      <Topbar onSidebarOpen={handleSidebarOpen} />
+      <Topbar
+        onAuth={handleOnAuth}
+        onSidebarOpen={handleSidebarOpen}
+      />
       <Sidebar
         onClose={handleSidebarClose}
         open={shouldOpenSidebar}
@@ -66,8 +92,15 @@ const Main = props => {
   );
 };
 
-Main.propTypes = {
-  children: PropTypes.node
+const mapStateToProps = (state: RootStateType) => {
+  return { user: state.user };
 };
 
-export default Main;
+const dispatchProps = {
+  setUser
+};
+
+export default connect(
+  mapStateToProps,
+  dispatchProps
+)(Main);

@@ -49,13 +49,15 @@ class UsersToolbar extends React.Component<PropsType, State> {
           <span className={classes.spacer} />
 
           <Tooltip title="Add new (inactive) user">
-            <Button
-              variant="contained"
-              className={classes.marginRight}
-              disabled
-            >
-              Add user
-            </Button>
+            <div>
+              <Button
+                variant="contained"
+                className={classes.marginRight}
+                disabled
+              >
+                Add user
+              </Button>
+            </div>
           </Tooltip>
 
           <Tooltip title="Activate selected users">

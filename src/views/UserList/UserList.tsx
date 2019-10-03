@@ -5,8 +5,6 @@ import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import { UsersToolbar, UsersTable } from './components';
 import User from 'models/user';
 import { fetchUsers, putUser } from 'api/users';
-import { fetchMailjetContacts } from 'api/mailjet';
-import Contact from 'models/mailjet/contact';
 import { Loading, showAlert } from 'components';
 
 const styles = (theme: Theme) => createStyles({
@@ -21,7 +19,6 @@ const styles = (theme: Theme) => createStyles({
 type PropsType = WithStyles<typeof styles>;
 
 interface State {
-  contacts?: Contact[];
   searchText: string;
   selectedUsers: string[];
   users?: User[];
@@ -33,7 +30,6 @@ class UserList extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      contacts: undefined,
       searchText: '',
       selectedUsers: [],
       users: undefined,
@@ -41,7 +37,6 @@ class UserList extends React.Component<PropsType, State> {
   }
 
   public componentDidMount = async () => {
-    this.reloadMailjetContacts();
     this.reloadUsers();
   }
 
@@ -63,11 +58,6 @@ class UserList extends React.Component<PropsType, State> {
     });
 
     this.setState({ users });
-  }
-
-  private reloadMailjetContacts = async () => {
-    const contacts = await fetchMailjetContacts();
-    this.setState({ contacts });
   }
 
   private onSearchTextChange = (searchText: string) => {
@@ -122,7 +112,7 @@ class UserList extends React.Component<PropsType, State> {
 
   public render() {
     const { classes } = this.props;
-    const { contacts, searchText, users } = this.state;
+    const { searchText, users } = this.state;
 
     if (!users) {
       return (<Loading />);
@@ -136,10 +126,8 @@ class UserList extends React.Component<PropsType, State> {
         />
         <div className={classes.content}>
           <UsersTable
-            contacts={contacts}
             onUserActivate={this.activateUser}
             onChangeSelectedUsers={this.onChangeSelectedUsers}
-            onMailjetUpdate={this.reloadMailjetContacts}
             searchText={searchText}
             users={users}
           />

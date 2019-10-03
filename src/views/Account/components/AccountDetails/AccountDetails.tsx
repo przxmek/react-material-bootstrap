@@ -21,7 +21,7 @@ const styles = createStyles({
 interface Props {
   className?: string;
   account: User;
-  contact: Contact;
+  contact?: Contact;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;

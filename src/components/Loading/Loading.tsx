@@ -20,15 +20,25 @@ interface State {
 }
 
 class Loading extends React.Component<PropsType, State> {
+  private showTextTimer?: NodeJS.Timeout;
+
   public state = {
     showText: false,
   };
 
   public componentDidMount() {
     const delayMs = 1000;
-    setTimeout(() => {
+    this.showTextTimer = setTimeout(() => {
       this.setState({ showText: true });
+      this.showTextTimer = undefined;
     }, delayMs);
+  }
+
+  public componentWillUnmount() {
+    if (this.showTextTimer) {
+      clearTimeout(this.showTextTimer);
+      this.showTextTimer = undefined;
+    }
   }
 
   public render() {
