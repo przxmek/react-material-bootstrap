@@ -1,8 +1,9 @@
-import { Tab, Grow, Typography } from '@material-ui/core';
+import { Tab, Grow } from '@material-ui/core';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import SnippetGeneratorEditor from './SnippetGeneratorEditor';
-import PrometheusEditor from './PrometheusEditor';
+import PrometheusSnippetsEditor from './PrometheusSnippetsEditor';
+import PrometheusSuggestionsEditor from './PrometheusSuggestionsEditor';
 import { TabMenu } from 'components';
 
 interface PathParamsType {
@@ -48,7 +49,6 @@ class TemplateEditor extends React.Component<PropsType, State> {
           id="tab-prometheus-autocomplete"
           value={2}
           label="Prometheus suggestions"
-          disabled
         />
         <Tab
           id="tab-snippet-generator"
@@ -57,10 +57,10 @@ class TemplateEditor extends React.Component<PropsType, State> {
         />
       </TabMenu>
       <Grow in={activeTab === 1} mountOnEnter unmountOnExit>
-        <PrometheusEditor emailAddress={emailAddress} />
+        <PrometheusSnippetsEditor emailAddress={emailAddress} />
       </Grow>
       <Grow in={activeTab === 2} mountOnEnter unmountOnExit>
-        <Typography>Todo</Typography>
+        <PrometheusSuggestionsEditor emailAddress={emailAddress} />
       </Grow>
       <Grow in={activeTab === 3} mountOnEnter unmountOnExit>
         <SnippetGeneratorEditor emailAddress={emailAddress} />

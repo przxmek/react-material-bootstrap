@@ -1,5 +1,5 @@
 import { API_URL } from "config";
-import { PrometheusTemplatesResponse } from "models/prometheus";
+import { PrometheusTemplatesResponse, PrometheusSuggestionsResponse } from "models/prometheus";
 import { PrometheusTemplate } from "models/templates";
 
 export async function fetchSnippets(
@@ -11,6 +11,18 @@ export async function fetchSnippets(
     return processGetResponse(json);
   } else {
     throw new Error(`Failed to fetch snippets (HTTP ${response.status} response)`);
+  }
+}
+
+export async function fetchSuggestions(
+  emailAddress: string
+): Promise<PrometheusSuggestionsResponse> {
+  const response = await fetch(`${API_URL}/prometheus/${emailAddress}/suggestions`);
+  if (response.ok) {
+    const json = await response.json();
+    return json;
+  } else {
+    throw new Error(`Failed to fetch suggestions (HTTP ${response.status} response)`);
   }
 }
 

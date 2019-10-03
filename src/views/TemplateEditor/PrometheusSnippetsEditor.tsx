@@ -39,7 +39,7 @@ interface State {
   loaded: boolean;
 }
 
-class PrometheusEditor extends React.Component<PropsType, State> {
+class PrometheusSnippetsEditor extends React.Component<PropsType, State> {
   constructor(props: PropsType) {
     super(props);
 
@@ -210,4 +210,4 @@ class PrometheusEditor extends React.Component<PropsType, State> {
   }
 }
 
-export default withStyles(styles)(PrometheusEditor);
+export default withStyles(styles)(PrometheusSnippetsEditor);

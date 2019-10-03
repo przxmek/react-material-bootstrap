@@ -20,7 +20,7 @@ const styles = (theme: Theme) => createStyles({
   content: {
     marginTop: theme.spacing(2),
     flex: '0 1 auto',
-    maxHeight: 700,
+    maxHeight: 680,
   },
   rightContent: {
     marginLeft: theme.spacing(),
