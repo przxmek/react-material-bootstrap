@@ -7,6 +7,7 @@ import PeopleIcon from '@material-ui/icons/People';
 import ShoppingBasketIcon from '@material-ui/icons/ShoppingBasket';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
 import SettingsIcon from '@material-ui/icons/Settings';
+import HelpIcon from '@material-ui/icons/HelpOutline';
 
 import {
   Profile,
@@ -51,28 +52,33 @@ const Sidebar: React.SFC<Props> = props => {
   const pages = [
     {
       title: 'Dashboard',
-      href: '/dashboard',
+      to: '/dashboard',
       icon: <DashboardIcon />
     },
     {
       title: 'Users',
-      href: '/users',
+      to: '/users',
       icon: <PeopleIcon />
     },
     {
       title: 'Products',
-      href: '/products',
+      to: '/products',
       icon: <ShoppingBasketIcon />
     },
     {
       title: 'Account',
-      href: '/account/przemek@pointapi.com',
+      to: '/account/przemek@pointapi.com',
       icon: <AccountBoxIcon />
     },
     {
       title: 'Settings',
-      href: '/settings',
+      to: '/settings',
       icon: <SettingsIcon />
+    },
+    {
+      title: 'Help',
+      href: 'https://easyemail.atlassian.net/wiki/spaces/GEN/pages/337739836/Admin+Dashboard',
+      icon: <HelpIcon />
     }
   ];
 
