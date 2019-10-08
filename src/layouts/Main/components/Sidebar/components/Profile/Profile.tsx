@@ -3,14 +3,13 @@ import { Link as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/styles';
 import { Avatar, Typography, Theme } from '@material-ui/core';
-import { User, fromGoogleAuth, Auth, unauthorized } from 'auth';
+import { User } from 'auth';
 import { connect } from 'react-redux';
 import { setUser } from 'redux/actions';
 import { RootStateType } from 'redux/reducers';
-import GoogleLogin, { GoogleLogout, GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
-import { GOOGLE_CLIENT_ID, GOOGLE_SCOPE } from 'config';
-import { showAlert } from 'components';
-import sendAuthResponse from 'api/auth';
+import { GoogleLogout } from 'react-google-login';
+import { GOOGLE_CLIENT_ID } from 'config';
+import { PointLogin } from 'components';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -47,31 +46,8 @@ const Profile: React.SFC<Props> = props => {
     avatar: '/images/avatars/anonymous-user.png'
   };
 
-
-  const handleAuth = async (auth: Auth) => {
-    if (auth.googleAuth) {
-      try {
-        await sendAuthResponse(
-          auth.googleAuth.getAuthResponse().id_token,
-          auth.googleAuth.getAuthResponse().access_token
-        );
-      } catch (e) {
-        showAlert("error", e.message, 10000);
-      }
-    }
-    props.setUser(auth.user);
-  };
-
-  const googleAuthSuccess = (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-    handleAuth(fromGoogleAuth(response as GoogleLoginResponse));
-  };
-
-  const googleAuthFailure = (response: { error: string }) => {
-    showAlert('error', `Failed to sign in with Google: ${response.error}`);
-  };
-
   const signOut = () => {
-    handleAuth(unauthorized());
+    props.setUser(undefined);
   };
 
   if (!user) {
@@ -90,17 +66,7 @@ const Profile: React.SFC<Props> = props => {
         >
           {defaultUser.name}
         </Typography>
-        <GoogleLogin
-          className={classes.googleButton}
-          clientId={GOOGLE_CLIENT_ID}
-          scope={GOOGLE_SCOPE}
-          buttonText="Sign in"
-          onSuccess={googleAuthSuccess}
-          onFailure={googleAuthFailure}
-          cookiePolicy={'single_host_origin'}
-          accessType="offline"
-          isSignedIn={true}
-        />
+        <PointLogin />
       </div>
     );
   }

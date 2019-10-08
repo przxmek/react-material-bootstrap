@@ -3,10 +3,6 @@ import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import { useMediaQuery, Theme } from '@material-ui/core';
 import { Sidebar, Topbar, Footer } from './components';
-import { connect } from 'react-redux';
-import { RootStateType } from 'redux/reducers';
-import { User } from 'auth';
-import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -27,11 +23,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface Props {
-  user?: User;
 }
 
 const Main: React.SFC<Props> = (props) => {
-  const { children, user } = props;
+  const { children } = props;
 
   const classes = useStyles();
   const theme = useTheme<Theme>();
@@ -50,12 +45,6 @@ const Main: React.SFC<Props> = (props) => {
   };
 
   const shouldOpenSidebar = isDesktop ? true : openSidebar;
-
-  if (!user) {
-    return (
-      <Redirect to='/sign-in' push />
-    );
-  }
 
   return (
     <div
@@ -80,10 +69,4 @@ const Main: React.SFC<Props> = (props) => {
   );
 };
 
-const mapStateToProps = (state: RootStateType) => {
-  return { user: state.user };
-};
-
-export default connect(
-  mapStateToProps,
-)(Main);
+export default Main;

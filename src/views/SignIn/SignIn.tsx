@@ -12,11 +12,8 @@ import {
   Theme
 } from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
-import { GOOGLE_CLIENT_ID, GOOGLE_SCOPE } from 'config';
-import { showAlert } from 'components';
-import { fromGoogleAuth, Auth, User } from 'auth';
-import sendAuthResponse from 'api/auth';
+import { PointLogin } from 'components';
+import { User } from 'auth';
 import { connect } from 'react-redux';
 import { setUser } from 'redux/actions';
 import { RootStateType } from 'redux/reducers';
@@ -173,29 +170,6 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
     }));
   }, [formState.values]);
 
-  const handleAuth = async (auth: Auth) => {
-    if (auth.googleAuth) {
-      try {
-        await sendAuthResponse(
-          auth.googleAuth.getAuthResponse().id_token,
-          auth.googleAuth.getAuthResponse().access_token
-        );
-
-        handleBack();
-      } catch (e) {
-        showAlert("error", e.message, 10000);
-      }
-    }
-    props.setUser(auth.user);
-  };
-
-  const googleAuthSuccess = (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-    handleAuth(fromGoogleAuth(response as GoogleLoginResponse));
-  };
-
-  const googleAuthFailure = (response: { error: string }) => {
-    showAlert('error', `Failed to sign in with Google: ${response.error}`);
-  };
 
   const handleBack = () => {
     if (history.length) {
@@ -299,15 +273,7 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
                   spacing={2}
                 >
                   <Grid item>
-                    <GoogleLogin
-                      clientId={GOOGLE_CLIENT_ID}
-                      scope={GOOGLE_SCOPE}
-                      onSuccess={googleAuthSuccess}
-                      onFailure={googleAuthFailure}
-                      cookiePolicy={'single_host_origin'}
-                      accessType="offline"
-                      isSignedIn={true}
-                    />
+                    <PointLogin />
                   </Grid>
                 </Grid>
                 {showLoginForm && (<>
