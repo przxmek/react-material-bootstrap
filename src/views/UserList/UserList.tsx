@@ -6,6 +6,7 @@ import { UsersToolbar, UsersTable } from './components';
 import User from 'models/user';
 import { fetchUsers, putUser } from 'api/users';
 import { Loading, showAlert } from 'components';
+import { Redirect } from 'react-router-dom';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -21,6 +22,7 @@ type PropsType = WithStyles<typeof styles>;
 interface State {
   searchText: string;
   selectedUsers: string[];
+  unauthorized?: boolean;
   users?: User[];
 }
 
@@ -41,7 +43,12 @@ class UserList extends React.Component<PropsType, State> {
   }
 
   private reloadUsers = async () => {
-    const users = await fetchUsers();
+    let users: User[] = [];
+    try {
+      users = await fetchUsers();
+    } catch (e) {
+      this.setState({ unauthorized: true });
+    }
 
     // Sort
     users.sort((a, b) => {
@@ -72,7 +79,7 @@ class UserList extends React.Component<PropsType, State> {
     await putUser(user);
 
     await this.reloadUsers();
-    
+
     showAlert("success", `User ${user.email_address} activated.`, 5000);
   }
 
@@ -81,9 +88,9 @@ class UserList extends React.Component<PropsType, State> {
   }
 
   private onBulkUsersActivate = async () => {
-    const { users, selectedUsers } = this.state;
+    const { selectedUsers, users } = this.state;
     const promises: Array<Promise<any>> = [];
-    
+
     if (!users) {
       return;
     }
@@ -103,7 +110,7 @@ class UserList extends React.Component<PropsType, State> {
     });
 
     showAlert("info", "Processing...", 5000);
-    
+
     await Promise.all(promises);
     await this.reloadUsers();
 
@@ -112,10 +119,14 @@ class UserList extends React.Component<PropsType, State> {
 
   public render() {
     const { classes } = this.props;
-    const { searchText, users } = this.state;
+    const { searchText, unauthorized, users } = this.state;
 
     if (!users) {
       return (<Loading />);
+    }
+
+    if (unauthorized) {
+      return <Redirect to="/sign-in" />;
     }
 
     return (
