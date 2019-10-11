@@ -12,6 +12,7 @@ import { setUser } from 'redux/actions';
 interface Props {
   user?: User;
   setUser: (user?: User) => void;
+  onSignIn?: (user?: User) => void;
 }
 
 const PointLogin: React.FunctionComponent<Props> = (props) => {
@@ -30,12 +31,18 @@ const PointLogin: React.FunctionComponent<Props> = (props) => {
       }
     }
     props.setUser(auth.user);
+    if (props.onSignIn) {
+      props.onSignIn(auth.user);
+    }
   };
 
   const handleOfflineAuth = async (login: GoogleLoginResponseOffline) => {
     try {
       const user = await sendOfflineAuthResponse(login.code);
       props.setUser(user);
+      if (props.onSignIn) {
+        props.onSignIn(user);
+      }
     } catch (e) {
       showAlert("error", e.message, 10000);
     }

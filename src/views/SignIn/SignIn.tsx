@@ -198,9 +198,15 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
     }));
   };
 
-  const handleSignIn = (event: FormEvent) => {
+  const handleSignInForm = (event: FormEvent) => {
     event.preventDefault();
     history.push('/');
+  };
+
+  const handleSignIn = (user?: User) => {
+    if (user) {
+      history.push('/');
+    }
   };
 
   const hasError = (field: string) =>
@@ -259,7 +265,7 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
             <div className={classes.contentBody}>
               <form
                 className={classes.form}
-                onSubmit={handleSignIn}
+                onSubmit={handleSignInForm}
               >
                 <Typography
                   className={classes.title}
@@ -273,7 +279,7 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
                   spacing={2}
                 >
                   <Grid item>
-                    <PointLogin />
+                    <PointLogin onSignIn={handleSignIn} />
                   </Grid>
                 </Grid>
                 {showLoginForm && (<>
