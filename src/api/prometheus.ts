@@ -5,7 +5,10 @@ import { PrometheusTemplate } from "models/templates";
 export async function fetchSnippets(
   emailAddress: string
 ): Promise<PrometheusTemplatesResponse> {
-  const response = await fetch(`${API_URL}/prometheus/${emailAddress}/snippets`);
+  const response = await fetch(`${API_URL}/prometheus/${emailAddress}/snippets`, {
+    method: 'GET',
+    credentials: 'include',
+  });
   if (response.ok) {
     const json = await response.json();
     return processGetResponse(json);
@@ -17,7 +20,10 @@ export async function fetchSnippets(
 export async function fetchSuggestions(
   emailAddress: string
 ): Promise<PrometheusSuggestionsResponse> {
-  const response = await fetch(`${API_URL}/prometheus/${emailAddress}/suggestions`);
+  const response = await fetch(`${API_URL}/prometheus/${emailAddress}/suggestions`, {
+    method: 'GET',
+    credentials: 'include',
+  });
   if (response.ok) {
     const json = await response.json();
     return json;
@@ -48,6 +54,7 @@ export async function deleteSnippet(
     `${API_URL}/prometheus/${emailAddress}/snippet/${id}`,
     {
       method: 'DELETE',
+      credentials: 'include',
       headers: {
         "Content-Type": "application/json",
       }
@@ -77,6 +84,7 @@ async function putSnippetInternal(
 
   return await fetch(url, {
     method: 'PUT',
+    credentials: 'include',
     body: JSON.stringify(snippet),
     headers: {
       "Content-Type": "application/json",

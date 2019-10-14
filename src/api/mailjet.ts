@@ -5,7 +5,10 @@ import Contact from "models/mailjet/contact";
  * Get a list of all contacts
  */
 export async function fetchMailjetContacts(): Promise<Contact[]> {
-  const response = await fetch(`${API_URL}/mailjet/contacts`);
+  const response = await fetch(`${API_URL}/mailjet/contacts`, {
+    method: 'GET',
+    credentials: 'include',
+  });
 
   if (response.ok) {
     const json = await response.json();
@@ -20,7 +23,10 @@ export async function fetchMailjetContacts(): Promise<Contact[]> {
  * @param emailAddress Contact's email address
  */
 export async function fetchMailjetContact(emailAddress: string): Promise<Contact> {
-  const response = await fetch(`${API_URL}/mailjet/contact/${emailAddress}`);
+  const response = await fetch(`${API_URL}/mailjet/contact/${emailAddress}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
 
   if (response.ok) {
     const json = await response.json();
@@ -34,7 +40,6 @@ export async function fetchMailjetContact(emailAddress: string): Promise<Contact
   }
 }
 
-
 /**
  * Change Contact's stage.
  * @param emailAddress Contact's email address
@@ -43,6 +48,7 @@ export async function changeContactStage(emailAddress: string, stage: string): P
   const response = await fetch(
     `${API_URL}/mailjet/contact/${emailAddress}/stage`, {
     method: 'PUT',
+    credentials: 'include',
     body: JSON.stringify({ stage }),
     headers: {
       "Content-Type": "application/json"

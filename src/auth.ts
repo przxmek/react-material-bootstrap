@@ -7,12 +7,10 @@ export interface Auth {
 }
 
 export interface User {
-  email: string;
-  familyName: string;
-  givenName: string;
-  googleId?: string;
-  imageUrl?: string;
+  id: string;
   name: string;
+  email: string;
+  imageUrl?: string;
 }
 
 export function fromGoogleAuth(googleAuth: GoogleLoginResponse) {
@@ -34,12 +32,10 @@ export function unauthorized() {
 function userFromGoogleAuth(googleAuth: GoogleLoginResponse) {
   const googleProfile = googleAuth.getBasicProfile();
   const user: User = {
-    email: googleProfile.getEmail(),
-    familyName: googleProfile.getFamilyName(),
-    givenName: googleProfile.getGivenName(),
-    googleId: googleProfile.getId(),
-    imageUrl: googleProfile.getImageUrl(),
+    id: googleProfile.getId(),
     name: googleProfile.getName(),
+    email: googleProfile.getEmail(),
+    imageUrl: googleProfile.getImageUrl(),
   };
 
   return user;

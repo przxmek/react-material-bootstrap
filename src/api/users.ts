@@ -2,12 +2,13 @@ import User from "models/user";
 import { API_URL } from "config";
 
 export async function fetchUsers(): Promise<User[]> {
-  const response = await fetch(`${API_URL}/users`);
-
+  const response = await fetch(`${API_URL}/users`, {
+    method: 'GET',
+    credentials: 'include'
+  });
 
   if (response.ok) {
     const json = await response.json();
-
     return json.users;
   } else {
     throw new Error(`Failed to fetch users (HTTP ${response.status} response)`);
@@ -18,6 +19,7 @@ export async function fetchUser(emailAddress: string): Promise<User> {
   const response = await fetch(
     `${API_URL}/user/${emailAddress}`, {
     method: 'GET',
+    credentials: 'include',
   });
 
 
@@ -51,6 +53,7 @@ export async function addPremiumDays(user: User, premiumDays: number): Promise<U
   const response = await fetch(
     `${API_URL}/user/${user.email_address}/add_premium`, {
     method: 'POST',
+    credentials: 'include',
     body: JSON.stringify({ premiumDays }),
     headers: {
       "Content-Type": "application/json"
