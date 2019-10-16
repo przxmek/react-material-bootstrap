@@ -22,7 +22,7 @@ class TemplateEditor extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      activeTab: 1,
+      activeTab: 4,
     };
   }
 
