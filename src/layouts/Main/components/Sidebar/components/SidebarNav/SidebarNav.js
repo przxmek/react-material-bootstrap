@@ -65,17 +65,28 @@ const SidebarNav = props => {
           disableGutters
           key={page.title}
         >
-          <Button
-            activeClassName={classes.active}
-            className={classes.button}
-            component={page.to ? CustomRouterLink : 'a'}
-            to={page.to}
-            href={page.href}
-            target={page.href ? 'blank' : ''}
-          >
-            <div className={classes.icon}>{page.icon}</div>
-            {page.title}
-          </Button>
+          {page.to && (
+            <Button
+              className={classes.button}
+              component={CustomRouterLink}
+              activeClassName={classes.active}
+              to={page.to}
+            >
+              <div className={classes.icon}>{page.icon}</div>
+              {page.title}
+            </Button>
+          )}
+          {!page.to && (
+            <Button
+              className={classes.button}
+              component='a'
+              href={page.href}
+              target='blank'
+            >
+              <div className={classes.icon}>{page.icon}</div>
+              {page.title}
+            </Button>
+          )}
         </ListItem>
       ))}
     </List>
