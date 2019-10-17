@@ -21,7 +21,7 @@ import {
 import clsx from 'clsx';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 
-import getGoogleSheetsUserData from 'api/googleSheets';
+import { fetchWaitlistData } from 'api/googleSheets';
 import { showAlert } from 'components';
 import { WaitlistSpreadsheet } from 'models/googleSheets';
 
@@ -82,7 +82,7 @@ class WaitlistSheet extends React.Component<PropsType, State> {
     const { emailAddress } = this.props;
     this.setState({ loading: true });
     try {
-      const data = await getGoogleSheetsUserData(emailAddress);
+      const data = await fetchWaitlistData(emailAddress);
       const empty = this.isEmpty(data);
       this.setState({ data, empty, loading: false });
     } catch (e) {

@@ -5,6 +5,7 @@ import SnippetGeneratorEditor from './SnippetGeneratorEditor';
 import PrometheusSnippetsEditor from './PrometheusSnippetsEditor';
 import PrometheusSuggestionsEditor from './PrometheusSuggestionsEditor';
 import { TabMenu } from 'components';
+import { StarterPacks } from './components';
 
 interface PathParamsType {
   emailAddress: string;
@@ -55,6 +56,13 @@ class TemplateEditor extends React.Component<PropsType, State> {
           value={3}
           label="Snippet Generator"
         />
+        {/* Icons: FilterNone, LibraryBooks, MenuBook */}
+        <Tab
+          id="tab-starter-packs"
+          // icon={<MenuBookIcon />}
+          value={4}
+          label="Starter packs"
+        />
       </TabMenu>
       <Grow in={activeTab === 1} mountOnEnter unmountOnExit>
         <PrometheusSnippetsEditor emailAddress={emailAddress} />
@@ -64,6 +72,9 @@ class TemplateEditor extends React.Component<PropsType, State> {
       </Grow>
       <Grow in={activeTab === 3} mountOnEnter unmountOnExit>
         <SnippetGeneratorEditor emailAddress={emailAddress} />
+      </Grow>
+      <Grow in={activeTab === 4} mountOnEnter unmountOnExit>
+        <StarterPacks emailAddress={emailAddress} />
       </Grow>
     </>
     );

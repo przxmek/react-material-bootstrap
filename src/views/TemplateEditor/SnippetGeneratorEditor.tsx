@@ -72,7 +72,7 @@ class SnippetGeneratorEditor extends React.Component<PropsType, State> {
   public componentDidMount = async () => {
     const { emailAddress } = this.props;
 
-    this.loadSnippetGeneratorData(emailAddress);
+    await this.loadSnippetGeneratorData(emailAddress);
   }
 
   private loadSnippetGeneratorData = async (emailAddress: string) => {
