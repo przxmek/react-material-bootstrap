@@ -28,7 +28,7 @@ const styles = (theme: Theme) => createStyles({
     textAlign: 'center',
     height: '100%',
   },
-  errorWrapper: {
+  statusWrapper: {
     width: '100%',
     backgroundColor: theme.palette.background.paper,
     overflow: 'auto',
@@ -44,12 +44,28 @@ interface Props {
 
 type PropsType = Props & WithStyles<typeof styles>;
 
+interface SuccessResult {
+  success: true;
+  name: string;
+}
+interface ErrorResult {
+  success: false;
+  name: string;
+  message: string;
+  details: string;
+}
+interface StatusType {
+  success: boolean;
+  results: Array<SuccessResult | ErrorResult>;
+}
+
 interface State {
-  error?: { message: string, details: string };
+  status?: StatusType;
   starterPacks?: StarterPack[];
   selectedItem?: StarterPack;
   selectedStarterPacks: string[];
   loading: boolean;
+  savingStarterPacks: boolean;
 }
 
 class StarterPacks extends React.Component<PropsType, State> {
@@ -57,8 +73,9 @@ class StarterPacks extends React.Component<PropsType, State> {
     super(props);
 
     this.state = {
-      loading: false,
       selectedStarterPacks: [],
+      loading: false,
+      savingStarterPacks: false,
     };
   }
 
@@ -68,9 +85,10 @@ class StarterPacks extends React.Component<PropsType, State> {
 
   private reloadStarterPacksData = async () => {
     this.setState({
-      loading: true,
       selectedItem: undefined,
-      selectedStarterPacks: []
+      selectedStarterPacks: [],
+      loading: true,
+      savingStarterPacks: false,
     });
 
     try {
@@ -96,6 +114,9 @@ class StarterPacks extends React.Component<PropsType, State> {
       return;
     }
 
+    showAlert("info", `Saving ${selectedStarterPacks.length} starter pack(s)...`, 15000);
+    this.setState({savingStarterPacks: true});
+
     const filtered = starterPacks.filter(sp => selectedStarterPacks.includes(sp.name));
     const converted: Array<{ name: string, request: PrometheusTemplate[] }> =
       filtered.map(sp => ({
@@ -109,23 +130,53 @@ class StarterPacks extends React.Component<PropsType, State> {
       })
       );
 
+    const results: Array<{ name: string, response?: any, error?: string }> = [];
+
     for (const batch of converted) {
       try {
         const response = await createOrUpdateSnippetBatch(emailAddress, batch.request);
-        if ('error' in response) {
-          showAlert("error", `Failed to store starter pack '${batch.name}': ${response.error}`);
-          const error = {
-            message: response.error,
-            details: response.results,
-          };
-          this.setState({ error });
-        } else {
-          showAlert("success", `Starter pack '${batch.name}' saved!`);
-        }
+        results.push({ name: batch.name, response });
       } catch (e) {
-        showAlert("error", `Failed to store starter pack '${batch.name}'. ${e}`);
+        results.push({
+          name: batch.name,
+          response: {
+            error: `Failed to store starter pack '${batch.name}'. ${e}`,
+            results: `Failed to store starter pack '${batch.name}'. ${e}`
+          }
+        });
+        showAlert("error", `Failed to store starter pack '${batch.name}'.`);
       }
     }
+
+    const status: StatusType = {
+      success: true,
+      results: [],
+    };
+
+    for (const r of results) {
+      if (r.response.error) {
+        status.success = false;
+        status.results.push({
+          success: false,
+          name: r.name,
+          message: r.response.error,
+          details: r.response.results,
+        });
+      } else {
+        status.results.push({
+          success: true,
+          name: r.name,
+        });
+      }
+    }
+
+    if (status.success) {
+      showAlert("success", `Saved ${selectedStarterPacks.length} starter pack(s)!`, 15000);
+    } else {
+      showAlert("error", `Saving some of chosen starter packs failed! 😣`, 15000);
+    }
+
+    this.setState({ status, savingStarterPacks: false });
   }
 
   private onListItemSelected = (item: StarterPack) => {
@@ -149,9 +200,9 @@ class StarterPacks extends React.Component<PropsType, State> {
     this.setState({ selectedStarterPacks: newSelectedStarterPacks });
   }
 
-  private renderErrorMessage = () => {
+  private renderStatusMessage = () => {
     const { classes } = this.props;
-    const { error } = this.state;
+    const { status } = this.state;
 
     const theme = {
       scheme: 'monokai',
@@ -174,18 +225,23 @@ class StarterPacks extends React.Component<PropsType, State> {
       base0F: '#cc6633'
     };
 
-    if (!error) {
+    if (!status) {
       return null;
     }
 
     return (
-      <div className={classes.errorWrapper}>
-        <Typography color="error" variant="h3">{error.message}</Typography>
-        <JSONTree data={error.details} theme={theme} invertTheme={false} />
+      <div className={classes.statusWrapper}>
+        {status.success && (
+          <Typography color="primary" variant="h3">All starter packs saved successfully!</Typography>
+        )}
+        {!status.success && (
+          <Typography color="error" variant="h3">Saving some of the starter packs failed!</Typography>
+        )}
+        <JSONTree data={status} theme={theme} invertTheme={false} />
         <Button
           color="primary"
           variant="outlined"
-          onClick={() => this.setState({ error: undefined })}
+          onClick={() => this.setState({ status: undefined })}
         >
           Dismiss
         </Button>
@@ -196,11 +252,12 @@ class StarterPacks extends React.Component<PropsType, State> {
   public render() {
     const { classes, emailAddress } = this.props;
     const {
-      error,
       loading,
       selectedItem,
       selectedStarterPacks,
-      starterPacks
+      starterPacks,
+      status,
+      savingStarterPacks,
     } = this.state;
 
     if (loading) {
@@ -213,6 +270,7 @@ class StarterPacks extends React.Component<PropsType, State> {
           emailAddress={emailAddress}
           onApplyAll={this.applySelectedStarterPacks}
           onRefresh={this.reloadStarterPacksData}
+          saving={savingStarterPacks}
         />
         <Box
           display="flex"
@@ -228,7 +286,7 @@ class StarterPacks extends React.Component<PropsType, State> {
           />
 
           <Box flexGrow={1} className={classes.rightContent}>
-            {error && this.renderErrorMessage()}
+            {status && this.renderStatusMessage()}
             <StarterPackDetails
               starterPack={selectedItem}
             />
