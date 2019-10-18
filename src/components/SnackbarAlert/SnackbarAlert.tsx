@@ -118,7 +118,7 @@ export const Alert = withStyles(styles)(SnackbarAlert);
 export function showAlert(
   variant: AlertVariant,
   message: React.ReactNode,
-  autoHideDuration = 1600,
+  autoHideDuration = 3000,
   props = {}
 ) {
   const mount = document.createElement("div");
