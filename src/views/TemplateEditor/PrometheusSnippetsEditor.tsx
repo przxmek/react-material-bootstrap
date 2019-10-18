@@ -42,7 +42,6 @@ interface State {
 class PrometheusSnippetsEditor extends React.Component<PropsType, State> {
   constructor(props: PropsType) {
     super(props);
-
     this.state = {
       prometheusSnippets: undefined,
 

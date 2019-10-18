@@ -8,8 +8,8 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  activeTab: number;
-  onChange: (activeTab: number) => void;
+  activeTab: string;
+  onChange: (activeTab: string) => void;
 }
 
 const TabMenu: React.SFC<Props> = (props) => {

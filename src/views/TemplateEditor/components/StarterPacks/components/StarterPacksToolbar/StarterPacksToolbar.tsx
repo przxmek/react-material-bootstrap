@@ -1,8 +1,8 @@
-import { Button, Theme, Tooltip } from '@material-ui/core';
+import { Button, Theme, Tooltip, CircularProgress } from '@material-ui/core';
 import { createStyles, WithStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import React from 'react';
-import { SNIPPET_GENERATOR_URL, SNIPPET_GENERATOR_PASS, SNIPPET_GENERATOR_USER } from 'config';
+import { green } from '@material-ui/core/colors';
 
 const styles = (theme: Theme) => createStyles({
   root: {},
@@ -21,6 +21,18 @@ const styles = (theme: Theme) => createStyles({
   iconSmall: {
     fontSize: 20
   },
+  wrapper: {
+    margin: theme.spacing(1),
+    position: 'relative',
+  },
+  buttonProgress: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 });
 
 interface Props {
@@ -28,6 +40,7 @@ interface Props {
   emailAddress: string;
   onApplyAll?: () => void;
   onRefresh?: () => void;
+  saving: boolean;
 }
 
 type PropsType = Props & WithStyles<typeof styles>;
@@ -37,31 +50,14 @@ interface State {
 
 class StarterPacksToolbar extends React.Component<PropsType, State> {
 
-  private downloadCSVs = async () => {
-    const { emailAddress } = this.props;
-
-    const files = [
-      "templates",
-      "templates_with_vars",
-      "potential_templates",
-      "potential_templates_with_vars",
-      "paragraph_snippets"
-    ];
-
-    for (const type of files) {
-      const url = `${SNIPPET_GENERATOR_URL}/snippets/${emailAddress}/${type}?csv`;
-      const authUrl = url.replace("://", `://${SNIPPET_GENERATOR_USER}:${SNIPPET_GENERATOR_PASS}@`);
-      window.open(authUrl);
-    }
-  }
-
   public render() {
     const {
       classes,
       className,
       emailAddress,
       onApplyAll,
-      onRefresh
+      onRefresh,
+      saving
     } = this.props;
 
     return (
@@ -95,18 +91,20 @@ class StarterPacksToolbar extends React.Component<PropsType, State> {
             </Tooltip>
           )}
 
-          <Tooltip title={`Apply selected starter packs to ${emailAddress} user account`}>
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.marginRight}
-              onClick={onApplyAll}
-              disabled={!onApplyAll}
-            >
-              Apply starter packs
+          <div className={classes.wrapper}>
+            <Tooltip title={`Apply selected starter packs to ${emailAddress} user account`}>
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.marginRight}
+                onClick={onApplyAll}
+                disabled={!onApplyAll || saving}
+              >
+                Apply starter packs
             </Button>
-          </Tooltip>
-
+            </Tooltip>
+            {saving && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </div>
         </div>
       </div>
     );

@@ -63,7 +63,6 @@ const Routes = () => {
       />
       <RouteWithLayout
         component={TemplateEditorView}
-        exact
         layout={MainLayout}
         path="/template-editor/:emailAddress"
       />
