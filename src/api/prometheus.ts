@@ -46,6 +46,20 @@ export async function createOrUpdateSnippet(
   }
 }
 
+export async function createOrUpdateSnippetBatch(
+  emailAddress: string,
+  snippets: PrometheusTemplate[],
+) {
+  const response = await putSnippetBatchInternal(emailAddress, snippets);
+
+  if (response.ok) {
+    const json = await response.json();
+    return json;
+  } else {
+    throw new Error(`Failed to batch create/update snippet (HTTP ${response.status} response)`);
+  }
+}
+
 export async function deleteSnippet(
   emailAddress: string,
   id: string,
@@ -86,6 +100,22 @@ async function putSnippetInternal(
     method: 'PUT',
     credentials: 'include',
     body: JSON.stringify(snippet),
+    headers: {
+      "Content-Type": "application/json",
+    }
+  });
+}
+
+async function putSnippetBatchInternal(
+  emailAddress: string,
+  snippets: PrometheusTemplate[],
+): Promise<Response> {
+  const url = `${API_URL}/prometheus/${emailAddress}/snippets/batch`;
+
+  return await fetch(url, {
+    method: 'PUT',
+    credentials: 'include',
+    body: JSON.stringify(snippets),
     headers: {
       "Content-Type": "application/json",
     }

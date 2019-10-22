@@ -7,3 +7,13 @@ export interface WaitlistSpreadsheet {
 }
 
 export type Spreadsheet = string[][];
+
+export interface StarterPack {
+  name: string;
+  snippets: StarterPackSnippet[];
+}
+
+export interface StarterPackSnippet {
+  trigger: string;
+  text: string;
+}
