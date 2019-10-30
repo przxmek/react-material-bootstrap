@@ -17,6 +17,7 @@ import "quill-emoji";
 import "quill-emoji/dist/quill-emoji.css";
 import { Template } from 'models/templates';
 import ChipsArray from './ChipsArray';
+import { reformatText } from 'common/text';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -138,18 +139,11 @@ class RichTextEditor extends React.Component<PropsType, State> {
     this.setState({ labels });
   }
 
-  private reformatText = (htmlText: string) => {
-    return htmlText
-      .replace(/<br>/g, '')
-      .replace(/<\/p><p>/g, '<br>')
-      .replace(/<p>|<\/p>/g, '');
-  }
-
   private onSave = () => {
     const { onSave } = this.props;
     const { text, trigger, labels } = this.state;
 
-    const formatted = this.reformatText(text);
+    const formatted = reformatText(text);
 
     onSave(formatted, trigger, labels);
   }
@@ -162,7 +156,7 @@ class RichTextEditor extends React.Component<PropsType, State> {
       return;
     }
 
-    const formatted = this.reformatText(text);
+    const formatted = reformatText(text);
 
     onApply(formatted, trigger, labels);
   }

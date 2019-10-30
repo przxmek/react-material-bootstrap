@@ -8,6 +8,7 @@ import { StarterPacksList, StarterPackDetails, StarterPacksToolbar } from './com
 import { createOrUpdateSnippetBatch } from 'api/prometheus';
 import { PrometheusTemplate } from 'models/templates';
 import JSONTree from 'react-json-tree';
+import { reformatText } from 'common/text';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -115,7 +116,7 @@ class StarterPacks extends React.Component<PropsType, State> {
     }
 
     showAlert("info", `Saving ${selectedStarterPacks.length} starter pack(s)...`, 15000);
-    this.setState({savingStarterPacks: true});
+    this.setState({ savingStarterPacks: true });
 
     const filtered = starterPacks.filter(sp => selectedStarterPacks.includes(sp.name));
     const converted: Array<{ name: string, request: PrometheusTemplate[] }> =
@@ -123,12 +124,11 @@ class StarterPacks extends React.Component<PropsType, State> {
         name: sp.name,
         request: sp.snippets.map(snippet => ({
           trigger: snippet.trigger,
-          text: snippet.text,
+          text: reformatText(snippet.text),
           labels: [sp.name],
           type: "prometheusSnippet"
         })),
-      })
-      );
+      }));
 
     const results: Array<{ name: string, response?: any, error?: string }> = [];
 
