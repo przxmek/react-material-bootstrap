@@ -1,0 +1,17 @@
+version: "3"
+services:
+  admin-dashboard-frontend:
+    image: 537194362290.dkr.ecr.us-west-2.amazonaws.com/admin-dashboard-frontend
+    expose:
+      - 3000
+    ports:
+      - 80:3000
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+  admin-dashboard-backend:
+    image: 537194362290.dkr.ecr.us-west-2.amazonaws.com/admin-dashboard-backend
+    expose:
+      - 5000
+    ports:
+      - 5000:5000

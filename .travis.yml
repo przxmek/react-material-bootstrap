@@ -1,0 +1,73 @@
+language: node_js
+node_js:
+  - "11.10"
+env:
+  global:
+    # include $HOME/.local/bin for `aws`
+    - PATH=$HOME/.local/bin:$PATH
+    - IMAGE_NAME=admin-dashboard-frontend
+    - SONAR_URL=https://sonar.pointapi.com
+notifications:
+  slack:
+    pointapi:Sjvqcwm25jFhXxEdZirCDqRk
+before_install:
+  - npm i -g npm@6.9.0
+  # set up awscli packages
+  - pip install --user awscli
+jobs:
+  include:
+    - stage: test
+      cache: npm
+      script:
+        # - npm test
+        - npm run build
+    - stage: docker
+      if: branch IN (master)
+      services:
+        - docker
+      script:
+        - echo "Travis branch $TRAVIS_BRANCH | commit $TRAVIS_COMMIT"
+
+        - echo "Building ${IMAGE_NAME} docker image.."
+        - docker build -t ${IMAGE_NAME}:latest --build-arg REACT_APP_ENV=prod .
+
+        - echo "Pushing ${IMAGE_NAME} docker image to ECR.."
+        - $(aws ecr get-login --no-include-email --region us-west-2)
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:master
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:latest
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:master
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+    - stage: docker
+      if: branch IN (dev)
+      services:
+        - docker
+      script:
+        - echo "Travis branch $TRAVIS_BRANCH | commit $TRAVIS_COMMIT"
+
+        - echo "Building ${IMAGE_NAME} docker image.."
+        - docker build -t ${IMAGE_NAME}:latest --build-arg REACT_APP_ENV=dev .
+
+        - echo "Pushing ${IMAGE_NAME} docker image to ECR.."
+        - $(aws ecr get-login --no-include-email --region us-west-2)
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:dev
+        - docker tag ${IMAGE_NAME}:latest 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:dev
+        - docker push 537194362290.dkr.ecr.us-west-2.amazonaws.com/${IMAGE_NAME}:$TRAVIS_COMMIT
+    - stage: sonar # This runs only on master branch to update the baseline
+      if: branch = master AND type != pull_request
+      cache:
+        directories:
+          - /home/travis/.sonar/cache
+      git:
+        depth: false
+      install:
+        - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip
+        - unzip sonar-scanner-cli-4.2.0.1873-linux.zip && mv sonar-scanner-4.2.0.1873-linux sonar-scanner
+        - rm sonar-scanner-cli-4.2.0.1873-linux.zip
+        - export SONAR_SCANNER_HOME=`pwd`/sonar-scanner/
+        - ln -s `pwd`/sonar-scanner/bin/sonar-scanner $HOME/bin/
+        - npm i typescript
+      script:
+        - sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN} -Dsonar.projectVersion=0.${TRAVIS_BUILD_NUMBER}
