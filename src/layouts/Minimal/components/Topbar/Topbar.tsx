@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'inline-block'
   },
   logoDashboardText: {
-    color: theme.palette.text.hint,
+    color: theme.palette.common.white,
     marginLeft: theme.spacing(),
   }
 }));
@@ -37,15 +37,16 @@ const Topbar: React.FunctionComponent<Props> = props => {
         <RouterLink to="/">
           <img
             className={classes.logo}
-            alt="Point."
-            src="/images/logos/point-logo.svg"
+            alt="React Material Bootstrap Logo"
+            src="/images/logos/logo--white.svg"
           />
           <Typography
             className={classes.logoDashboardText}
-            variant="h2"
+            component="h1"
+            variant="h4"
             display="inline"
           >
-            Admin Dashboard
+            React Material Bootstrap
           </Typography>
         </RouterLink>
       </Toolbar>

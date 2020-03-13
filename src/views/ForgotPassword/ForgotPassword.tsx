@@ -12,8 +12,6 @@ import {
   Container,
   CssBaseline,
   Avatar,
-  FormControlLabel,
-  Checkbox,
   Box,
   LinearProgress
 } from '@material-ui/core';
@@ -21,7 +19,7 @@ import { User } from 'auth';
 import { connect } from 'react-redux';
 import { setUser } from 'redux/actions';
 import { RootStateType } from 'redux/reducers';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import RefreshIcon from '@material-ui/icons/RefreshOutlined';
 import {
   Link as RouterLink
 } from "react-router-dom";
@@ -36,12 +34,6 @@ const schema = {
       maximum: 64
     }
   },
-  password: {
-    presence: { allowEmpty: false, message: 'is required' },
-    length: {
-      maximum: 128
-    }
-  }
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -81,7 +73,7 @@ interface FormStateType {
   errors: { [key: string]: string };
 }
 
-const SignIn: React.FunctionComponent<PropsType> = props => {
+const ForgotPassword: React.FunctionComponent<PropsType> = props => {
   const { history } = props;
 
   const classes = useStyles();
@@ -141,10 +133,17 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
       <CssBaseline />
       <div className={classes.paper}>
         <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
+          <RefreshIcon />
         </Avatar>
-        <Typography component="h1" variant="h2">
-          Sign in
+
+        <Typography component="h1" variant="h2" gutterBottom>
+          Password Reset
+        </Typography>
+
+        <Typography variant="subtitle2" paragraph>
+          {"Enter  the email address that you used to register. "}
+          {"We'll send you an email with your username "}
+          {"and a link to reset your password."}
         </Typography>
         <form
           className={classes.form}
@@ -169,27 +168,6 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
             onChange={handleChange}
             value={formState.values.email || ''}
           />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            error={hasError('password')}
-            helperText={
-              hasError('password') ? formState.errors.password[0] : null
-            }
-            onChange={handleChange}
-            value={formState.values.password || ''}
-          />
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
-          />
 
           <Button
             type="submit"
@@ -199,7 +177,7 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
             className={classes.submit}
             disabled={!formState.isValid || loading}
           >
-            Sign In
+            Send
           </Button>
 
           <LinearProgress
@@ -210,10 +188,10 @@ const SignIn: React.FunctionComponent<PropsType> = props => {
             <Grid item xs>
               <Link
                 component={RouterLink}
-                to="/forgot-password"
+                to="/sign-in"
                 variant="body2"
               >
-                Forgot password?
+                Sign In
               </Link>
             </Grid>
 
@@ -248,4 +226,4 @@ const dispatchProps = {
 export default connect(
   mapStateToProps,
   dispatchProps
-)(withRouter(SignIn));
+)(withRouter(ForgotPassword));
