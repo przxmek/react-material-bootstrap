@@ -67,7 +67,7 @@ const Sidebar: React.SFC<Props> = props => {
     },
     {
       title: 'Account',
-      to: '/account/przemek@pointapi.com',
+      to: '/account/',
       icon: <AccountBoxIcon />
     },
     {

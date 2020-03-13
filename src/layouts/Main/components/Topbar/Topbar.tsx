@@ -53,8 +53,8 @@ class Topbar extends React.Component<PropsType, State> {
           <RouterLink to="/">
             <img
               className={classes.logo}
-              alt="Point."
-              src="/images/logos/point-logo.svg"
+              alt="React Material Bootstrap Logo"
+              src="/images/logos/logo--white.svg"
             />
             <Typography
               className={classes.logoDashboardText}
@@ -62,7 +62,7 @@ class Topbar extends React.Component<PropsType, State> {
               variant="h2"
               display="inline"
             >
-              Admin Dashboard
+              React Material Bootstrap
             </Typography>
           </RouterLink>
           <div className={classes.flexGrow} />

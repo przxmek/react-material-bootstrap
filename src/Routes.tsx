@@ -8,6 +8,7 @@ import {
 import {
   Account as AccountView,
   Dashboard as DashboardView,
+  ForgotPassword as ForgotPasswordView,
   NotFound as NotFoundView,
   ProductList as ProductListView,
   Settings as SettingsView,
@@ -60,6 +61,12 @@ const Routes = () => {
         exact
         layout={MinimalLayout}
         path="/sign-up"
+      />
+      <RouteWithLayout
+        component={ForgotPasswordView}
+        exact
+        layout={MinimalLayout}
+        path="/forgot-password"
       />
       <RouteWithLayout
         component={TemplateEditorView}

@@ -249,6 +249,7 @@ const SignUp = props => {
               >
                 <Typography
                   className={classes.title}
+                  component="h1"
                   variant="h2"
                 >
                   Create new account
