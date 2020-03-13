@@ -1,6 +1,6 @@
-# admin-dashboard-frontend
+# react-material-bootstrap
 
-[![Build Status](https://travis-ci.com/PointMail/admin-dashboard-frontend.svg?token=FAG8qk4up1vsYvZUA2xw&branch=master)](https://travis-ci.com/PointMail/admin-dashboard-frontend)
+[![Build Status](https://travis-ci.com/group/project.svg?branch=master)](https://travis-ci.com/group/project)
 
 ## Quick start
 
